@@ -29,6 +29,10 @@ export default function AssistantRegister() {
           </div>
         </header>
 
+        <div className="mt-4">
+          <a href="/" className="text-sm underline">Volver al inicio</a>
+        </div>
+
         <section className="max-w-xl mx-auto mt-16 text-center">
           <h1 className="text-4xl font-extrabold">Registrar usuario nuevo</h1>
           <div className="mt-10 space-y-4">

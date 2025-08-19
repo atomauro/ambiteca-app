@@ -27,6 +27,10 @@ export default function WeightPage() {
           </div>
         </header>
 
+        <div className="mt-4">
+          <a href="/" className="text-sm underline">Volver al inicio</a>
+        </div>
+
         <section className="max-w-5xl mx-auto mt-14">
           <h1 className="text-4xl font-extrabold">Ingresa el peso que muestra la balanza</h1>
           <div className="mt-10 grid grid-cols-1 md:grid-cols-2 gap-12 items-start">

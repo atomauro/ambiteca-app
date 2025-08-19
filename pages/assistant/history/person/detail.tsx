@@ -19,6 +19,10 @@ export default function HistoryPersonDetail() {
           </div>
         </header>
 
+        <div className="mt-4">
+          <a href="/" className="text-sm underline">Volver al inicio</a>
+        </div>
+
         <section className="max-w-5xl mx-auto mt-14">
           <h1 className="text-2xl font-extrabold">Juan Pérez</h1>
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-8 mt-6 text-sm">

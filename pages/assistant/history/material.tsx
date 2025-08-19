@@ -19,6 +19,10 @@ export default function HistoryMaterial() {
           </div>
         </header>
 
+        <div className="mt-4">
+          <a href="/" className="text-sm underline">Volver al inicio</a>
+        </div>
+
         <section className="max-w-3xl mx-auto mt-24 text-center">
           <h1 className="text-4xl font-extrabold">Historial de recaudo de material</h1>
           <div className="mt-10 space-y-6">

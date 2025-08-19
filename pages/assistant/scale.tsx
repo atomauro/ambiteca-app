@@ -26,6 +26,10 @@ export default function ScalePage() {
           </div>
         </header>
 
+        <div className="mt-4">
+          <a href="/" className="text-sm underline">Volver al inicio</a>
+        </div>
+
         <section className="max-w-4xl mx-auto mt-20 text-center">
           <h1 className="text-4xl font-extrabold">{name},</h1>
           <h2 className="text-4xl font-extrabold mt-2">Sube el material a la báscula</h2>

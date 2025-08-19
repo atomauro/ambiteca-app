@@ -26,6 +26,10 @@ export default function SummaryPage() {
           </div>
         </header>
 
+        <div className="mt-4">
+          <a href="/" className="text-sm underline">Volver al inicio</a>
+        </div>
+
         <section className="max-w-5xl mx-auto mt-14 text-center">
           <h1 className="text-4xl font-extrabold">¡Listo! Tu material ha sido registrado.</h1>
           <div className="mt-12 grid grid-cols-1 md:grid-cols-2 gap-10">

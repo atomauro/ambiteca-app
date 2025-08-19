@@ -38,6 +38,10 @@ export default function MaterialsPage() {
           </div>
         </header>
 
+        <div className="mt-4">
+          <a href="/" className="text-sm underline">Volver al inicio</a>
+        </div>
+
         <section className="max-w-5xl mx-auto mt-20 text-center">
           <h1 className="text-4xl font-extrabold">Hola {name},</h1>
           <h2 className="text-4xl font-extrabold mt-2">¿Qué quieres reciclar hoy?</h2>

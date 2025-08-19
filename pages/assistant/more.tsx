@@ -22,6 +22,10 @@ export default function MoreMaterialsPage() {
           </div>
         </header>
 
+        <div className="mt-4">
+          <a href="/" className="text-sm underline">Volver al inicio</a>
+        </div>
+
         <section className="max-w-3xl mx-auto mt-24 text-center">
           <h1 className="text-4xl font-extrabold">¿Quieres pesar más materiales?</h1>
           <p className="text-gray-600 mt-3">A continuación puedes observar tu saldo en puntos perla verde.</p>

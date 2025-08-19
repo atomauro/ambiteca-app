@@ -19,6 +19,10 @@ export default function RewardsPage() {
           </div>
         </header>
 
+        <div className="mt-4">
+          <a href="/" className="text-sm underline">Volver al inicio</a>
+        </div>
+
         <section className="max-w-3xl mx-auto mt-20 text-center">
           <h1 className="text-4xl font-extrabold">Gestión de puntos por reciclaje y recompensas</h1>
           <div className="mt-10 flex justify-center gap-6">

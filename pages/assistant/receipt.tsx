@@ -20,6 +20,10 @@ export default function ReceiptPage() {
           </div>
         </header>
 
+        <div className="mt-4">
+          <a href="/" className="text-sm underline">Volver al inicio</a>
+        </div>
+
         <section className="max-w-3xl mx-auto mt-14 text-center">
           <h1 className="text-4xl font-extrabold">Gracias por ayudar el planeta!</h1>
           <p className="mt-4 text-gray-600">A continuación puedes verificar tu saldo en puntos perla verde.</p>
