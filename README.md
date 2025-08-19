@@ -1,39 +1,60 @@
-# Privy Auth `create-next-app` Starter
+# AMBITECA APP
 
-This is a template for integrating [**Privy Auth**](https://www.privy.io/) into a [NextJS](https://nextjs.org/) project. Check out the deployed app [here](https://create-next-app.privy.io/)!
+Aplicación web en Next.js para gestionar reciclaje en puntos físicos (ambitecas). Permite que dos tipos de usuario interactúen:
 
-This demo uses NextJS's [Pages Router](https://nextjs.org/docs/pages/building-your-application/routing). If you'd like to see an example using the [App Router](https://nextjs.org/docs/app), just change the branch of this repository to [`app-router`](https://github.com/privy-io/create-next-app/tree/app-router). 
+- **Administrador**: sesión con Privy (para demo). Accede al panel y navegación general.
+- **Asistente**: flujo operativo para registrar personas, materiales y pesos. Todo el flujo está maquetado y funciona en modo demo (sin backend real), con navegación entre pantallas y datos simulados.
 
-## Setup
+## Rutas principales (demo)
 
-1. Clone this repository and open it in your terminal. 
-```sh
-git clone https://github.com/privy-io/create-next-app
+- `/` Landing con accesos a los dos roles
+- `/assistant` Inicio del flujo de Asistente (selección de ambiteca y hora)
+  - `/assistant/home` ¿Qué quieres hacer hoy?
+  - `/assistant/login` Identificar persona
+  - `/assistant/register` Registrar persona nueva
+  - `/assistant/materials` Selección de material
+  - `/assistant/scale` Indicación de llevar a báscula
+  - `/assistant/weight` Ingreso de peso
+  - `/assistant/summary` Resumen del registro
+  - `/assistant/more` ¿Pesar más materiales?
+  - `/assistant/receipt` Recibo/agradecimiento
+  - `/assistant/history` Entrada a históricos (por material / por persona)
+  - `/assistant/rewards` Gestión de puntos (mock)
+- `/dashboard` Panel para Administrador (con enlace al flujo de Asistente)
+- `/onboarding` Pantalla de onboarding (demo)
+
+## Instalación rápida
+
+```bash
+npm install
+npm run dev
 ```
 
-2. Install the necessary dependencies (including [Privy Auth](https://www.npmjs.com/package/@privy-io/react-auth)) with `npm`.
-```sh
-npm i 
+Abrir `http://localhost:3000`.
+
+### Variables de entorno (opcional para login admin)
+
+Si quieres probar el login del Administrador con Privy, crea un archivo `.env.local` con:
+
+```
+NEXT_PUBLIC_PRIVY_APP_ID=tu_app_id
+PRIVY_APP_SECRET=tu_app_secret
 ```
 
-3. Initialize your environment variables by copying the `.env.example` file to an `.env.local` file. Then, in `.env.local`, [paste your Privy App ID from the dashboard](https://docs.privy.io/guide/dashboard/api-keys).
-```sh
-# In your terminal, create .env.local from .env.example
-cp .env.example .env.local
+El flujo de Asistente funciona sin estas variables (datos y acciones simuladas para demo).
 
-# Add your Privy App ID to .env.local
-NEXT_PUBLIC_PRIVY_APP_ID=<your-privy-app-id>
-```
+## Estructura relevante
 
-## Building locally
+- `pages/assistant/*` Todas las pantallas del flujo del Asistente
+- `pages/dashboard.tsx` Panel del Administrador con enlace a Asistente
+- `pages/index.tsx` Landing y navegación a roles
+- `pages/onboarding.tsx` Pantalla de onboarding
 
-In your project directory, run `npm run dev`. You can now visit http://localhost:3000 to see your app and login with Privy!
+## Notas
 
+- Este repositorio es un demo inicial para presentación. No hay integraciones reales a balanzas ni almacenamiento persistente.
+- Los textos y estilos están en español y orientados a mostrar el flujo completo.
 
-## Check out:
-- `pages/_app.tsx` for how to use the `PrivyProvider` and initialize it with your Privy App ID
-- `pages/index.tsx` for how to use the `usePrivy` hook and implement a simple `login` button
-- `pages/dashboard.tsx` for how to use the `usePrivy` hook, fields like `ready`, `authenticated`, and `user`, and methods like `linkWallet` and `logout`
+## Licencia
 
-
-**Check out [our docs](https://docs.privy.io/) for more guidance around using Privy in your app!**
+Ver archivo `LICENSE`.
