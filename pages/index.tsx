@@ -51,12 +51,12 @@ export default function HomePage() {
             Cada material que reciclas cuenta. ¡Haz la diferencia hoy!
           </p>
           <div className="mt-8 flex justify-center gap-4">
-            <button onClick={login} className="rounded-full bg-orange-600 hover:bg-orange-700 text-white px-6 py-3 text-sm font-semibold">
+            <Link href="/auth/login" className="rounded-full bg-orange-600 hover:bg-orange-700 text-white px-6 py-3 text-sm font-semibold">
               Iniciar sesión
-            </button>
-            <button onClick={login} className="rounded-full bg-green-500 hover:bg-green-600 text-white px-6 py-3 text-sm font-semibold">
+            </Link>
+            <Link href="/auth/register" className="rounded-full bg-green-500 hover:bg-green-600 text-white px-6 py-3 text-sm font-semibold">
               Crear cuenta
-            </button>
+            </Link>
           </div>
         </section>
       </main>

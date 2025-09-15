@@ -1,7 +1,8 @@
 import "../styles/globals.css";
 import type { AppProps } from "next/app";
 import Head from "next/head";
-import { PrivyProvider } from "@privy-io/react-auth";
+import Providers from "../components/Providers";
+import { Toaster } from "react-hot-toast";
 
 
 function MyApp({ Component, pageProps }: AppProps) {
@@ -83,16 +84,10 @@ function MyApp({ Component, pageProps }: AppProps) {
           }}
         />
       </Head>
-      <PrivyProvider
-        appId={process.env.NEXT_PUBLIC_PRIVY_APP_ID || ""}
-        config={{
-          embeddedWallets: {
-            createOnLogin: "all-users",
-          },
-        }}
-      >
+      <Providers>
         <Component {...pageProps} />
-      </PrivyProvider>
+        <Toaster position="top-right" toastOptions={{ duration: 3000 }} />
+      </Providers>
     </>
   );
 }
