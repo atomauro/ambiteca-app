@@ -30,6 +30,7 @@ export default function DashboardPage() {
               </div>
               <div className="flex items-center gap-3">
                 <Link href="/assistant" className="text-sm underline">Asistente</Link>
+                <Link href="/admin" className="text-sm underline">Admin</Link>
                 <button onClick={logout} className="text-sm rounded-full bg-gray-100 hover:bg-gray-200 px-4 py-2">Salir</button>
               </div>
             </header>

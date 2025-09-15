@@ -38,6 +38,9 @@ export default function SummaryPage() {
       setDeliveryId(data.deliveryId);
       setAwardedPlv(data.awardedPlv);
       toast.success("Entrega confirmada");
+      if (data.deletedDraft) {
+        toast.success("Borrador eliminado");
+      }
       return data;
     } catch (e: any) {
       toast.error(e.message || "No se pudo confirmar");
