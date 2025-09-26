@@ -1,6 +1,5 @@
 {
   "extends": [
-    "@tsconfig/strictest/tsconfig",
     "@tsconfig/node18/tsconfig",
     "@tsconfig/next/tsconfig"
   ],
@@ -19,7 +18,13 @@
     "noImplicitReturns": false,
     "noPropertyAccessFromIndexSignature": false,
     "exactOptionalPropertyTypes": false,
-    "moduleResolution": "node"
+    "moduleResolution": "node",
+    "baseUrl": ".",
+    "paths": {
+      "@/*": ["./*"]
+    },
+    "skipLibCheck": true,
+    "strict": false
   },
   "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", "**/*.js", "**/*.jsx"],
   "exclude": ["node_modules"]

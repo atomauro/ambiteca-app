@@ -1,8 +1,9 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
-import { createSupabaseServer } from '../../../lib/supabase/server';
+import { createClient } from '@/lib/supabase/client';
+import { withAdminAuth } from '@/lib/auth/privy-server';
 
-export default async function handler(req: NextApiRequest, res: NextApiResponse) {
-  const supabase = createSupabaseServer(req as any);
+export default withAdminAuth(async function handler(req: NextApiRequest, res: NextApiResponse, user) {
+  const supabase = createClient();
   if (req.method === 'GET') {
     const { data, error } = await supabase.from('ambitecas').select('id,name,is_active');
     if (error) return res.status(500).json({ error: error.message });
@@ -21,6 +22,6 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     return res.status(200).json({ ok: true });
   }
   return res.status(405).json({ error: 'Method not allowed' });
-}
+});
 
 

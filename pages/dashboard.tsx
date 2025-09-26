@@ -4,10 +4,12 @@ import { usePrivy } from "@privy-io/react-auth";
 import Head from "next/head";
 import Image from "next/image";
 import Link from "next/link";
+import { useUserSync } from "@/lib/hooks/useUserSync";
 
 export default function DashboardPage() {
   const router = useRouter();
-  const { ready, authenticated, logout } = usePrivy();
+  const { ready, authenticated, logout, user } = usePrivy();
+  const { profile, loading: profileLoading } = useUserSync();
 
   useEffect(() => {
     if (ready && !authenticated) {
@@ -32,14 +34,21 @@ export default function DashboardPage() {
                 <Link href="/assistant" className="text-sm underline">Asistente</Link>
                 <Link href="/admin" className="text-sm underline">Admin</Link>
                 <button onClick={logout} className="text-sm rounded-full bg-gray-100 hover:bg-gray-200 px-4 py-2">Salir</button>
-              </div>
+            </div>
             </header>
 
             <section className="px-6 sm:px-12 pt-16 pb-12 text-center">
-              <h1 className="text-3xl sm:text-5xl font-extrabold tracking-tight">Hola, Admin</h1>
+              <h1 className="text-3xl sm:text-5xl font-extrabold tracking-tight">
+                Hola, {profile?.name || user?.google?.name || user?.apple?.name || user?.facebook?.name || 'Usuario'}
+              </h1>
               <p className="mt-4 text-gray-600 max-w-2xl mx-auto">
                 Cada material que reciclas cuenta. ¡Haz la diferencia hoy!
               </p>
+              {profile && (
+                <div className="mt-4 text-sm text-gray-500">
+                  Rol: <span className="font-semibold capitalize">{profile.role}</span>
+                </div>
+              )}
               <div className="mt-8 flex justify-center gap-4">
                 <button className="rounded-full bg-orange-600 hover:bg-orange-700 text-white px-6 py-3 text-sm font-semibold">Iniciar sesión</button>
                 <button className="rounded-full bg-green-500 hover:bg-green-600 text-white px-6 py-3 text-sm font-semibold">Crear cuenta</button>

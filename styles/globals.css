@@ -2,8 +2,62 @@
 @tailwind components;
 @tailwind utilities;
 
+:root {
+  /* Paleta de colores AmbitecApp con verde esmeralda y naranja */
+  --background: 0 0% 100%; /* Fondo blanco */
+  --foreground: 0 0% 15%; /* Texto gris oscuro */
+  --card: 0 0% 98%; /* Gris claro para tarjetas */
+  --card-foreground: 0 0% 15%; /* Texto gris oscuro para tarjetas */
+  --popover: 0 0% 100%; /* Blanco para popovers */
+  --popover-foreground: 0 0% 15%; /* Texto gris oscuro para popovers */
+  --primary: 160 84% 39%; /* Verde esmeralda para acciones primarias */
+  --primary-foreground: 0 0% 100%; /* Blanco para texto en botones primarios */
+  --secondary: 25 95% 53%; /* Naranja para acciones secundarias */
+  --secondary-foreground: 0 0% 100%; /* Blanco para texto en botones secundarios */
+  --muted: 0 0% 96%; /* Gris claro para elementos silenciados */
+  --muted-foreground: 0 0% 45%; /* Gris medio para texto silenciado */
+  --accent: 160 84% 39%; /* Esmeralda para elementos de acento */
+  --accent-foreground: 0 0% 100%; /* Blanco para texto en elementos de acento */
+  --destructive: 0 84% 60%;
+  --destructive-foreground: 0 0% 98%;
+  --border: 0 0% 90%; /* Gris claro para bordes */
+  --input: 0 0% 100%; /* Blanco para campos de entrada */
+  --ring: 160 84% 39%; /* Esmeralda para anillos de enfoque */
+  --radius: 0.5rem; /* Esquinas redondeadas */
+}
+
+.dark {
+  --background: 0 0% 8%;
+  --foreground: 0 0% 98%;
+  --card: 0 0% 8%;
+  --card-foreground: 0 0% 98%;
+  --popover: 0 0% 8%;
+  --popover-foreground: 0 0% 98%;
+  --primary: 160 84% 45%;
+  --primary-foreground: 0 0% 8%;
+  --secondary: 25 95% 60%;
+  --secondary-foreground: 0 0% 8%;
+  --muted: 0 0% 15%;
+  --muted-foreground: 0 0% 65%;
+  --accent: 160 84% 45%;
+  --accent-foreground: 0 0% 8%;
+  --destructive: 0 62% 50%;
+  --destructive-foreground: 0 0% 98%;
+  --border: 0 0% 15%;
+  --input: 0 0% 15%;
+  --ring: 160 84% 45%;
+}
+
 @layer base {
-  /* normal */
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground;
+    font-family: "Adelle Sans", system-ui, sans-serif;
+  }
+
+  /* Fuentes personalizadas */
   @font-face {
     font-family: "Adelle Sans";
     src: url("/fonts/AdelleSans-Regular.woff2") format("woff2");
@@ -12,7 +66,6 @@
     font-weight: 300;
   }
 
-  /* semibold */
   @font-face {
     font-family: "Adelle Sans";
     src: url("/fonts/AdelleSans-Semibold.woff2") format("woff2");

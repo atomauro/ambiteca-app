@@ -1,8 +1,9 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
-import { createSupabaseServer } from '../../../lib/supabase/server';
+import { createClient } from '@/lib/supabase/client';
+import { withAdminAuth } from '@/lib/auth/privy-server';
 
-export default async function handler(req: NextApiRequest, res: NextApiResponse) {
-  const supabase = createSupabaseServer(req as any);
+export default withAdminAuth(async function handler(req: NextApiRequest, res: NextApiResponse, user) {
+  const supabase = createClient();
 
   if (req.method === 'GET') {
     const { data: mats, error } = await supabase.from('materials').select('id,name');
@@ -38,6 +39,6 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   }
 
   return res.status(405).json({ error: 'Method not allowed' });
-}
+});
 
 

@@ -1,36 +1,28 @@
 'use client';
 
 import { PrivyProvider } from '@privy-io/react-auth';
-import { SupabaseProvider, useSupabase } from './SupabaseProvider';
 
 export default function Providers({ children }: { children: React.ReactNode }) {
-  return (
-    <SupabaseProvider>
-      <InnerPrivyProvider>{children}</InnerPrivyProvider>
-    </SupabaseProvider>
-  );
-}
-
-function InnerPrivyProvider({ children }: { children: React.ReactNode }) {
-  const { loading, supabase, session } = useSupabase();
-
-  async function getCustomAccessToken() {
-    if (!session) return undefined;
-    const { data, error } = await supabase.auth.getSession();
-    if (error) return undefined;
-    return data.session?.access_token || undefined;
-  }
-
   return (
     <PrivyProvider
       appId={process.env.NEXT_PUBLIC_PRIVY_APP_ID || ''}
       config={{
-        customAuth: {
-          isLoading: loading,
-          getCustomAccessToken,
-        },
+        // Habilitar social logins sin wallet login
+        loginMethods: ['google', 'apple', 'facebook', 'email'],
+        // Crear wallets embebidas para todos los usuarios
         embeddedWallets: {
           createOnLogin: 'all-users',
+        },
+        // Configuración de apariencia
+        appearance: {
+          theme: 'light',
+          accentColor: '#10b981', // Verde AMBITECA
+          logo: '/logos/privy-logo.png',
+        },
+        // Configurar legal links
+        legal: {
+          termsAndConditionsUrl: '/terms',
+          privacyPolicyUrl: '/privacy',
         },
       }}
     >

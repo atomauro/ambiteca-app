@@ -1,4 +1,5 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
+import { withAdminAuth } from '@/lib/auth/privy-server';
 
 const mockUsers = Array.from({ length: 12 }).map((_, i) => ({
   id: `user-${i+1}`,
@@ -10,13 +11,13 @@ const mockUsers = Array.from({ length: 12 }).map((_, i) => ({
   plv: Number((Math.random()*300).toFixed(3)),
 }));
 
-export default async function handler(req: NextApiRequest, res: NextApiResponse) {
+export default withAdminAuth(async function handler(req: NextApiRequest, res: NextApiResponse, user) {
   if (req.method === 'GET') return res.status(200).json({ users: mockUsers });
   if (req.method === 'POST') {
     const { id, is_active } = req.body || {};
     return res.status(200).json({ id, is_active });
   }
   return res.status(405).json({ error: 'Method not allowed' });
-}
+});
 
 

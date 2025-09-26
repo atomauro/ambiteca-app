@@ -1,23 +1,11 @@
 import Head from "next/head";
 import Link from "next/link";
 import { useEffect, useState } from "react";
-import type { GetServerSideProps } from "next";
-import { createSupabaseServer } from "../lib/supabase/server";
+import { useAdminGuard } from "@/lib/hooks/useAdminGuard";
 import toast from "react-hot-toast";
 
-export const getServerSideProps: GetServerSideProps = async (ctx) => {
-  const supabase = createSupabaseServer(ctx.req as any);
-  const { data } = await supabase.auth.getUser();
-  const userId = data.user?.id;
-  if (!userId) return { redirect: { destination: "/auth/login", permanent: false }, props: {} };
-  const { data: profile } = await supabase.from("profiles").select("role,is_active").eq("user_id", userId).maybeSingle();
-  if (!profile || profile.role !== "admin" || profile.is_active === false) {
-    return { redirect: { destination: "/", permanent: false }, props: {} };
-  }
-  return { props: {} };
-};
-
 export default function AdminUsersList() {
+  const { isLoading, isAuthorized } = useAdminGuard();
   const [users, setUsers] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
 
@@ -38,6 +26,21 @@ export default function AdminUsersList() {
       setLoading(false);
     }
   };
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-green-500 mx-auto"></div>
+          <p className="mt-2 text-gray-600">Cargando...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (!isAuthorized) {
+    return null;
+  }
 
   return (
     <>
