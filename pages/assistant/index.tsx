@@ -11,7 +11,7 @@ export default function AssistantLanding() {
       <Head>
         <title>AMBITECA APP · Asistente</title>
       </Head>
-      <main className="min-h-screen bg-white px-6 sm:px-12 py-12">
+      <main className="min-h-screen bg-white px-4 sm:px-6 lg:px-8 py-12">
         <header className="flex items-center justify-between">
           <div className="flex items-center gap-3">
             <Image src="/images/logoambiteca.png" alt="Ambitecapp" width={36} height={36} />

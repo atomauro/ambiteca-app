@@ -35,7 +35,7 @@ export default function AdminMaterials() {
       <Head>
         <title>Admin · Materiales</title>
       </Head>
-      <main className="min-h-screen bg-white px-6 sm:px-12 py-10">
+      <main className="min-h-screen bg-white px-4 sm:px-6 lg:px-8 py-10">
         <nav className="text-sm text-gray-600 mb-3 flex gap-2 flex-wrap">
           <Link href="/admin" className="underline">Admin</Link>
           <span>/</span>

@@ -44,7 +44,7 @@ export default function AdminDashboard() {
       <Head>
         <title>Admin · Panel</title>
       </Head>
-      <main className="min-h-screen bg-white px-6 sm:px-12 py-10">
+      <main className="min-h-screen bg-white px-4 sm:px-6 lg:px-8 py-10">
         <div className="flex flex-wrap items-center justify-between gap-4">
           <h1 className="text-2xl sm:text-3xl font-extrabold">Panel administrativo</h1>
           <nav className="flex gap-3 text-sm">

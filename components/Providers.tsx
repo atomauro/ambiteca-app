@@ -1,6 +1,19 @@
 'use client';
 
 import { PrivyProvider } from '@privy-io/react-auth';
+import { useUserSync } from '../lib/hooks/useUserSync';
+
+// Componente interno para manejar la sincronización
+function UserSyncHandler({ children }: { children: React.ReactNode }) {
+  const { isLoading, error } = useUserSync();
+  
+  // Mostrar error si hay problemas de sincronización (opcional)
+  if (error) {
+    console.warn('User sync error:', error);
+  }
+  
+  return <>{children}</>;
+}
 
 export default function Providers({ children }: { children: React.ReactNode }) {
   return (
@@ -26,7 +39,9 @@ export default function Providers({ children }: { children: React.ReactNode }) {
         },
       }}
     >
-      {children}
+      <UserSyncHandler>
+        {children}
+      </UserSyncHandler>
     </PrivyProvider>
   );
 }

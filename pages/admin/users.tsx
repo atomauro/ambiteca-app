@@ -47,7 +47,7 @@ export default function AdminUsersList() {
       <Head>
         <title>Admin · Usuarios</title>
       </Head>
-      <main className="min-h-screen bg-white px-6 sm:px-12 py-10">
+      <main className="min-h-screen bg-white px-4 sm:px-6 lg:px-8 py-10">
         <div className="flex items-center justify-between">
           <h1 className="text-2xl font-extrabold">Usuarios</h1>
           <Link href="/admin" className="underline text-sm">Volver al panel</Link>

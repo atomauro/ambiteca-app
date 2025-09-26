@@ -25,7 +25,7 @@ export default function DashboardPage() {
       <main className="min-h-screen bg-white">
         {ready && authenticated ? (
           <>
-            <header className="flex items-center justify-between px-6 sm:px-12 py-4">
+            <header className="flex items-center justify-between px-4 sm:px-6 lg:px-8 py-4">
               <div className="flex items-center gap-3">
                 <Image src="/images/logoambiteca.png" alt="Ambitecapp" width={36} height={36} />
                 <span className="font-semibold tracking-wide">AMBITECAPP</span>
@@ -37,7 +37,7 @@ export default function DashboardPage() {
             </div>
             </header>
 
-            <section className="px-6 sm:px-12 pt-16 pb-12 text-center">
+            <section className="px-4 sm:px-6 lg:px-8 pt-16 pb-12 text-center">
               <h1 className="text-3xl sm:text-5xl font-extrabold tracking-tight">
                 Hola, {profile?.name || user?.google?.name || user?.apple?.name || user?.facebook?.name || 'Usuario'}
               </h1>

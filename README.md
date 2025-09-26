@@ -51,17 +51,22 @@ Copia `env.example` a `.env.local` y configura:
 # Privy (requerido para wallets)
 NEXT_PUBLIC_PRIVY_APP_ID=tu_privy_app_id
 PRIVY_APP_SECRET=tu_privy_app_secret
+PRIVY_WEBHOOK_SECRET=tu_privy_webhook_secret
 
 # Supabase (requerido para base de datos)
 NEXT_PUBLIC_SUPABASE_URL=https://tu-proyecto.supabase.co
 NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=tu_supabase_anon_key
+SUPABASE_SERVICE_ROLE_KEY=tu_supabase_service_role_key
 
 # Contratos PerlaVerde (configurar después del deployment)
 NEXT_PUBLIC_PPV_PROXY_BASE_SEPOLIA=0x...
 NEXT_PUBLIC_PPV_PROXY_OP_SEPOLIA=0x...
 ```
 
-### 3. Ejecutar la Aplicación
+### 3. Configurar Webhooks Privy → Supabase
+Para sincronización automática de usuarios, sigue la guía: [`docs/privy-webhooks-setup.md`](docs/privy-webhooks-setup.md)
+
+### 4. Ejecutar la Aplicación
 ```bash
 npm run dev
 ```
