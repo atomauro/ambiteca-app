@@ -21,7 +21,7 @@ export default function Providers({ children }: { children: React.ReactNode }) {
       appId={process.env.NEXT_PUBLIC_PRIVY_APP_ID || ''}
       config={{
         // Habilitar social logins sin wallet login
-        loginMethods: ['google', 'apple', 'facebook', 'email'],
+        loginMethods: ['google', 'apple', 'email'],
         // Crear wallets embebidas para todos los usuarios
         embeddedWallets: {
           createOnLogin: 'all-users',

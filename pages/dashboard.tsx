@@ -9,7 +9,7 @@ import { useUserSync } from "@/lib/hooks/useUserSync";
 export default function DashboardPage() {
   const router = useRouter();
   const { ready, authenticated, logout, user } = usePrivy();
-  const { profile, loading: profileLoading } = useUserSync();
+  const { userProfile, isLoading: profileLoading } = useUserSync();
 
   useEffect(() => {
     if (ready && !authenticated) {
@@ -32,21 +32,21 @@ export default function DashboardPage() {
               </div>
               <div className="flex items-center gap-3">
                 <Link href="/assistant" className="text-sm underline">Asistente</Link>
-                <Link href="/admin" className="text-sm underline">Admin</Link>
+                <Link href="/admin/dashboard" className="text-sm underline">Admin</Link>
                 <button onClick={logout} className="text-sm rounded-full bg-gray-100 hover:bg-gray-200 px-4 py-2">Salir</button>
             </div>
             </header>
 
             <section className="px-4 sm:px-6 lg:px-8 pt-16 pb-12 text-center">
               <h1 className="text-3xl sm:text-5xl font-extrabold tracking-tight">
-                Hola, {profile?.name || user?.google?.name || user?.apple?.name || user?.facebook?.name || 'Usuario'}
+                Hola, {userProfile?.full_name || user?.google?.name || 'Usuario'}
               </h1>
               <p className="mt-4 text-gray-600 max-w-2xl mx-auto">
                 Cada material que reciclas cuenta. ¡Haz la diferencia hoy!
               </p>
-              {profile && (
+              {userProfile && (
                 <div className="mt-4 text-sm text-gray-500">
-                  Rol: <span className="font-semibold capitalize">{profile.role}</span>
+                  Rol: <span className="font-semibold capitalize">{userProfile.role}</span>
                 </div>
               )}
               <div className="mt-8 flex justify-center gap-4">
