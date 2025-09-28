@@ -1,10 +1,11 @@
+import React from "react";
 import { useRouter } from "next/router";
 import { useEffect } from "react";
 import { usePrivy } from "@privy-io/react-auth";
 import Head from "next/head";
-import Image from "next/image";
 import Link from "next/link";
 import { useUserSync } from "@/lib/hooks/useUserSync";
+import { Recycle } from "lucide-react";
 
 export default function DashboardPage() {
   const router = useRouter();
@@ -22,19 +23,59 @@ export default function DashboardPage() {
       <Head>
         <title>AMBITECA APP</title>
       </Head>
-      <main className="min-h-screen bg-white">
+      <div className="min-h-screen bg-background">
         {ready && authenticated ? (
           <>
-            <header className="flex items-center justify-between px-4 sm:px-6 lg:px-8 py-4">
-              <div className="flex items-center gap-3">
-                <Image src="/images/logoambiteca.png" alt="Ambitecapp" width={36} height={36} />
-                <span className="font-semibold tracking-wide">AMBITECAPP</span>
+            {/* Header */}
+            <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+              <div className="flex h-16 items-center justify-between px-4 sm:px-6 lg:px-8">
+                <div className="flex items-center gap-2">
+                  <div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary">
+                    {React.createElement(Recycle, { className: "h-5 w-5 text-primary-foreground" })}
+                  </div>
+                  <span className="text-xl font-bold text-foreground">AMBITECAPP</span>
+                </div>
+
+                <nav className="hidden md:flex items-center gap-6">
+                  <a
+                    href="/#inicio"
+                    className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
+                  >
+                    Inicio
+                  </a>
+                  <a
+                    href="/#beneficios"
+                    className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
+                  >
+                    Beneficios
+                  </a>
+                  <a
+                    href="/#materiales"
+                    className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
+                  >
+                    Materiales
+                  </a>
+                </nav>
+
+                <div className="flex items-center gap-2">
+                  <Link href="/assistant">
+                    <button className="px-3 py-1 text-sm rounded-md hover:bg-gray-100 transition-colors">
+                      Asistente
+                    </button>
+                  </Link>
+                  <Link href="/admin">
+                    <button className="px-3 py-1 text-sm rounded-md hover:bg-gray-100 transition-colors">
+                      Admin
+                    </button>
+                  </Link>
+                  <button 
+                    onClick={logout}
+                    className="px-3 py-1 text-sm rounded-md bg-primary text-primary-foreground hover:bg-primary/90 transition-colors"
+                  >
+                    Salir
+                  </button>
+                </div>
               </div>
-              <div className="flex items-center gap-3">
-                <Link href="/assistant" className="text-sm underline">Asistente</Link>
-                <Link href="/admin/dashboard" className="text-sm underline">Admin</Link>
-                <button onClick={logout} className="text-sm rounded-full bg-gray-100 hover:bg-gray-200 px-4 py-2">Salir</button>
-            </div>
             </header>
 
             <section className="px-4 sm:px-6 lg:px-8 pt-16 pb-12 text-center">
@@ -102,7 +143,7 @@ export default function DashboardPage() {
             </div>
           </>
         ) : null}
-      </main>
+      </div>
     </>
   );
 }
