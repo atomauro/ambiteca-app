@@ -114,7 +114,7 @@ export function useUserSync() {
             user_id: userId,
             privy_user_id: user!.id,
             address: wallet.address,
-            chain_type: wallet.chainType,
+            chain_type: 'ethereum', // TODO: Determinar chain type correcto desde wallet
             wallet_client_type: wallet.walletClientType,
             is_embedded: wallet.walletClientType === 'privy',
           }, {

@@ -44,13 +44,13 @@ export class PerlaVerdeClient {
       throw new Error(`No contract address configured for chain ${chainId}`);
     }
 
-    if ('provider' in providerOrSigner) {
+    if ('provider' in providerOrSigner && providerOrSigner.provider) {
       // Es un signer
-      this.signer = providerOrSigner;
-      this.provider = providerOrSigner.provider!;
+      this.signer = providerOrSigner as ethers.Signer;
+      this.provider = providerOrSigner.provider;
     } else {
       // Es un provider
-      this.provider = providerOrSigner;
+      this.provider = providerOrSigner as ethers.Provider;
     }
 
     this.contract = new ethers.Contract(

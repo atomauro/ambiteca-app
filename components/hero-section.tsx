@@ -14,7 +14,7 @@ export function HeroSection() {
           <div className="grid lg:grid-cols-2 gap-8 lg:gap-12 items-center">
             {/* Contenido de texto */}
             <div className="text-center lg:text-left">
-              <div className="mb-8 inline-flex items-center gap-2 rounded-full bg-primary/20 px-4 py-2 text-sm font-medium text-primary-foreground border border-primary/30">
+              <div className="mb-8 inline-flex items-center gap-2 rounded-full bg-primary px-4 py-2 text-sm font-medium text-primary-foreground border border-primary">
                 {React.createElement(Recycle, { className: "h-4 w-4" })}
                 Únete al cambio ambiental
               </div>

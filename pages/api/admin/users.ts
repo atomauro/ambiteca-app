@@ -1,5 +1,5 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
-import { withAdminAuth } from '@/lib/auth/privy-server';
+import { withAdminAuth } from '../../../lib/auth/privy-server';
 
 const mockUsers = Array.from({ length: 12 }).map((_, i) => ({
   id: `user-${i+1}`,

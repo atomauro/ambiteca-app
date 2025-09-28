@@ -58,8 +58,9 @@ export function usePerlaVerde(targetChainId: SupportedChainId = DEFAULT_CHAIN_ID
       setState(prev => ({ ...prev, isLoading: true, error: null }));
 
       // Obtener el provider de la wallet embebida
-      const provider = await embeddedWallet.getEthersProvider();
-      const signer = provider.getSigner();
+      const eip1193Provider = await embeddedWallet.getEthereumProvider();
+      const provider = new ethers.BrowserProvider(eip1193Provider);
+      const signer = await provider.getSigner();
       
       // Verificar que estamos en la red correcta
       const network = await provider.getNetwork();

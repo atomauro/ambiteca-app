@@ -1,10 +1,10 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
-import { PrivyApi } from '@privy-io/server-auth';
+import { PrivyClient } from '@privy-io/server-auth';
 import { ethers } from 'ethers';
 import { PerlaVerdeClient } from '../../../lib/contracts/client';
 import { getContractConfig, DEFAULT_CHAIN_ID } from '../../../lib/contracts/config';
 
-const privy = new PrivyApi(
+const privy = new PrivyClient(
   process.env.NEXT_PUBLIC_PRIVY_APP_ID!,
   process.env.PRIVY_APP_SECRET!
 );
@@ -43,14 +43,14 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
     // Buscar wallet embebida del usuario
     const embeddedWallet = user.linkedAccounts.find(
-      account => account.type === 'wallet' && account.walletClientType === 'privy'
+      account => account.type === 'wallet' && (account as any).walletClientType === 'privy'
     );
 
-    if (!embeddedWallet) {
+    if (!embeddedWallet || embeddedWallet.type !== 'wallet') {
       return res.status(400).json({ error: 'Wallet embebida no encontrada' });
     }
 
-    const userAddress = embeddedWallet.address;
+    const userAddress = (embeddedWallet as any).address;
     const chainId = targetChain === 'optimism' ? 11155420 : DEFAULT_CHAIN_ID; // OP Sepolia o Base Sepolia
 
     // Configurar provider y contrato

@@ -172,3 +172,5 @@ NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=eyJ...
 ## Estado Actual
 
 🟢 **Listo para producción** con autenticación social completa y gestión de wallets integrada.
+
+

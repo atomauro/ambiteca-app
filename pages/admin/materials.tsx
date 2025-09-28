@@ -2,7 +2,7 @@ import Head from "next/head";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import type { GetServerSideProps } from "next";
-import { createSupabaseServer } from "../lib/supabase/server";
+import { createSupabaseServer } from "../../lib/supabase/server";
 import toast from "react-hot-toast";
 
 export const getServerSideProps: GetServerSideProps = async (ctx) => {

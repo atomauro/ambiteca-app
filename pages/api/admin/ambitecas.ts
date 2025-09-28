@@ -1,6 +1,6 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
-import { createClient } from '@/lib/supabase/client';
-import { withAdminAuth } from '@/lib/auth/privy-server';
+import { createClient } from '../../../lib/supabase/client';
+import { withAdminAuth } from '../../../lib/auth/privy-server';
 
 export default withAdminAuth(async function handler(req: NextApiRequest, res: NextApiResponse, user) {
   const supabase = createClient();

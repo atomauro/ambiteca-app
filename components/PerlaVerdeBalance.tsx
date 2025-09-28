@@ -1,11 +1,11 @@
 import { usePerlaVerde } from '../lib/hooks/usePerlaVerde';
-import { DEFAULT_CHAIN_ID } from '../lib/contracts/config';
+import { DEFAULT_CHAIN_ID, type SupportedChainId } from '../lib/contracts/config';
 import { usePrivy } from '@privy-io/react-auth';
 
 interface PerlaVerdeBalanceProps {
   className?: string;
   showFullBalance?: boolean;
-  chainId?: number;
+  chainId?: SupportedChainId;
 }
 
 export default function PerlaVerdeBalance({ 
