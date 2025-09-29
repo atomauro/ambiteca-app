@@ -2,6 +2,7 @@ import Head from 'next/head'
 import { usePrivy } from '@privy-io/react-auth'
 import { useUserSync } from '@/lib/hooks/useUserSync'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
+import { Skeleton } from '@/components/ui/skeleton'
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -13,7 +14,7 @@ import {
 import { Recycle } from 'lucide-react'
 import { getRoleLabel } from '@/lib/utils-client'
 import Link from 'next/link'
-import React, { useRef, useState } from 'react'
+import React, { useEffect, useRef, useState } from 'react'
 import { Pencil, Loader2, CheckCircle2, XCircle } from 'lucide-react'
 import PhoneInput, { isValidPhoneNumber } from 'react-phone-number-input'
 
@@ -37,6 +38,20 @@ export default function ProfilePage() {
   })
   const [errors, setErrors] = useState<Record<string, string>>({})
   const fileInputRef = useRef<HTMLInputElement>(null)
+
+  // Hidratar formulario cuando llegue/ cambie el perfil desde Supabase
+  useEffect(() => {
+    if (userProfile) {
+      setForm(prev => ({
+        ...prev,
+        full_name: userProfile.full_name || '',
+        phone: userProfile.phone || '',
+      }))
+      if (userProfile?.avatar_url) {
+        setDisplayAvatar(userProfile.avatar_url)
+      }
+    }
+  }, [userProfile?.full_name, userProfile?.phone, userProfile?.avatar_url])
 
   const onChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target
@@ -110,9 +125,11 @@ export default function ProfilePage() {
       })
       try {
         const refreshed = await refreshProfile()
-        if (refreshed?.full_name) {
-          setForm(prev => ({ ...prev, full_name: refreshed.full_name }))
-        }
+        setForm(prev => ({
+          ...prev,
+          full_name: refreshed?.full_name || prev.full_name,
+          phone: refreshed?.phone || prev.phone,
+        }))
       } catch {}
       // opcional: refrescar perfil desde hook
     } catch (err) {
@@ -173,6 +190,7 @@ export default function ProfilePage() {
                   </DropdownMenuLabel>
                   <DropdownMenuSeparator />
                   <Link href="/profile"><DropdownMenuItem className="cursor-pointer">Perfil</DropdownMenuItem></Link>
+                  <Link href="/dashboard"><DropdownMenuItem className="cursor-pointer">Dashboard</DropdownMenuItem></Link>
                 {/*   <Link href="/assistant"><DropdownMenuItem className="cursor-pointer">Asistente</DropdownMenuItem></Link>
                   <Link href="/admin"><DropdownMenuItem className="cursor-pointer">Admin</DropdownMenuItem></Link> */}
                   <DropdownMenuSeparator />
@@ -186,10 +204,14 @@ export default function ProfilePage() {
         <main className="px-4 sm:px-6 lg:px-8 py-10 max-w-6xl mx-auto">
           <div className="flex flex-col items-center gap-4">
             <div className="relative group">
-              <Avatar className="size-28">
-                <AvatarImage src={displayAvatar} alt={displayName} />
-                <AvatarFallback>{displayName.slice(0, 2).toUpperCase()}</AvatarFallback>
-              </Avatar>
+              {!userProfile ? (
+                <Skeleton className="size-28 rounded-full" />
+              ) : (
+                <Avatar className="size-28">
+                  <AvatarImage src={displayAvatar} alt={displayName} />
+                  <AvatarFallback>{displayName.slice(0, 2).toUpperCase()}</AvatarFallback>
+                </Avatar>
+              )}
               <button
                 type="button"
                 onClick={() => fileInputRef.current?.click()}
@@ -250,8 +272,17 @@ export default function ProfilePage() {
               />
             </div>
             <div className="text-center">
-              <h1 className="text-2xl font-semibold">{displayName}</h1>
-              <p className="text-sm text-muted-foreground">{email}</p>
+              {!userProfile ? (
+                <>
+                  <Skeleton className="h-6 w-40 mx-auto mb-2" />
+                  <Skeleton className="h-4 w-48 mx-auto" />
+                </>
+              ) : (
+                <>
+                  <h1 className="text-2xl font-semibold">{displayName}</h1>
+                  <p className="text-sm text-muted-foreground">{email}</p>
+                </>
+              )}
             </div>
             <div className="sm:hidden">
               <Link href="/dashboard" className="rounded-md px-3 py-2 text-sm border hover:bg-muted">Ir al dashboard</Link>
@@ -276,20 +307,28 @@ export default function ProfilePage() {
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div className="grid gap-1">
                     <label className="text-sm text-muted-foreground">Nombre completo</label>
-                    <input name="full_name" value={form.full_name} onChange={onChange} className="border rounded px-3 py-2 text-sm" />
+                    {!userProfile ? (
+                      <Skeleton className="h-9 w-full" />
+                    ) : (
+                      <input name="full_name" value={form.full_name} onChange={onChange} className="border rounded px-3 py-2 text-sm" />
+                    )}
                     {errors.full_name && <span className="text-xs text-red-600">{errors.full_name}</span>}
                   </div>
                   <div className="grid gap-1">
                     <label className="text-sm text-muted-foreground">Teléfono</label>
-                    <div className="border rounded px-2 py-1.5 text-sm">
-                      <PhoneInput
-                        international
-                        defaultCountry="CO"
-                        value={form.phone || undefined}
-                        onChange={(value) => setForm(prev => ({ ...prev, phone: value || '' }))}
-                        className="[&>input]:outline-none"
-                      />
-                    </div>
+                    {!userProfile ? (
+                      <Skeleton className="h-9 w-full" />
+                    ) : (
+                      <div className="border rounded px-2 py-1.5 text-sm">
+                        <PhoneInput
+                          international
+                          defaultCountry="CO"
+                          value={form.phone || undefined}
+                          onChange={(value) => setForm(prev => ({ ...prev, phone: value || '' }))}
+                          className="[&>input]:outline-none"
+                        />
+                      </div>
+                    )}
                     {errors.phone && <span className="text-xs text-red-600">{errors.phone}</span>}
                   </div>
                   <div className="grid gap-1">

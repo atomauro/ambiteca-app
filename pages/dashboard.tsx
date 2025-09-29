@@ -100,6 +100,8 @@ export default function DashboardPage() {
                       <Link href="/profile">
                         <DropdownMenuItem className="cursor-pointer">Perfil</DropdownMenuItem>
                       </Link>
+                      <Link href="/dashboard"><DropdownMenuItem className="cursor-pointer">Dashboard</DropdownMenuItem></Link>
+
                       {/* <Link href="/assistant">
                         <DropdownMenuItem className="cursor-pointer">Asistente</DropdownMenuItem>
                       </Link>

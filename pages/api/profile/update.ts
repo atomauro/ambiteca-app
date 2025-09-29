@@ -130,6 +130,18 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       }
     }
 
+    // Sincronizar metadata de auth.users (opcional pero visible en dashboard de Auth)
+    try {
+      await supabaseAdmin.auth.admin.updateUserById(profile.user_id, {
+        user_metadata: {
+          full_name: clean(full_name) ?? updatedProfile?.full_name ?? profile.full_name ?? undefined,
+          phone: clean(phone) ?? updatedProfile?.phone ?? profile.phone ?? undefined,
+        },
+      })
+    } catch (e) {
+      console.warn('[profile/update] No se pudo actualizar user_metadata:', e)
+    }
+
     // Devolver vista competa de usuario
     const { data: viewUser } = await supabaseAdmin
       .from('v_user_complete')
