@@ -4,8 +4,18 @@ import { useEffect } from "react";
 import { usePrivy } from "@privy-io/react-auth";
 import Head from "next/head";
 import Link from "next/link";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { useUserSync } from "@/lib/hooks/useUserSync";
 import { Recycle } from "lucide-react";
+import { getRoleLabel } from "@/lib/utils-client";
 
 export default function DashboardPage() {
   const router = useRouter();
@@ -36,7 +46,7 @@ export default function DashboardPage() {
                   <span className="text-xl font-bold text-foreground">AMBITECAPP</span>
                 </div>
 
-                <nav className="hidden md:flex items-center gap-6">
+               {/*  <nav className="hidden md:flex items-center gap-6">
                   <a
                     href="/#inicio"
                     className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
@@ -54,26 +64,52 @@ export default function DashboardPage() {
                     className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
                   >
                     Materiales
-                  </a>
-                </nav>
+                  </a> 
+                </nav>*/}
 
-                <div className="flex items-center gap-2">
-                  <Link href="/assistant">
-                    <button className="px-3 py-1 text-sm rounded-md hover:bg-gray-100 transition-colors">
+                <div className="flex items-center gap-4">
+                 {/*  <nav className="hidden sm:flex items-center gap-2">
+                    <Link href="/assistant" className="px-3 py-1 text-sm rounded-md hover:bg-gray-100 transition-colors">
                       Asistente
-                    </button>
-                  </Link>
-                  <Link href="/admin">
-                    <button className="px-3 py-1 text-sm rounded-md hover:bg-gray-100 transition-colors">
+                    </Link>
+                    <Link href="/admin" className="px-3 py-1 text-sm rounded-md hover:bg-gray-100 transition-colors">
                       Admin
-                    </button>
-                  </Link>
-                  <button 
-                    onClick={logout}
-                    className="px-3 py-1 text-sm rounded-md bg-primary text-primary-foreground hover:bg-primary/90 transition-colors"
-                  >
-                    Salir
-                  </button>
+                    </Link>
+                  </nav> */}
+                  <DropdownMenu>
+                    <DropdownMenuTrigger className="rounded-full focus:outline-none focus:ring-2 focus:ring-ring">
+                      <Avatar className="size-8">
+                        <AvatarImage src={(user as any)?.google?.profilePictureUrl || (user as any)?.apple?.profilePictureUrl || "/images/avatar.png"} alt={userProfile?.full_name || "Usuario"} />
+                        <AvatarFallback>{(userProfile?.full_name || "U").slice(0, 2).toUpperCase()}</AvatarFallback>
+                      </Avatar>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end" className="w-56">
+                      <DropdownMenuLabel>
+                        <div className="flex items-center gap-3">
+                          <Avatar className="size-8">
+                            <AvatarImage src={(user as any)?.google?.profilePictureUrl || (user as any)?.apple?.profilePictureUrl || "/images/avatar.png"} alt={userProfile?.full_name || "Usuario"} />
+                            <AvatarFallback>{(userProfile?.full_name || "U").slice(0, 2).toUpperCase()}</AvatarFallback>
+                          </Avatar>
+                          <div>
+                            <div className="text-sm font-medium leading-none">{userProfile?.full_name || user?.google?.name || "Usuario"}</div>
+                            <div className="text-xs text-muted-foreground truncate max-w-[160px]">{userProfile?.email || user?.email?.address || ""}</div>
+                          </div>
+                        </div>
+                      </DropdownMenuLabel>
+                      <DropdownMenuSeparator />
+                      <Link href="/profile">
+                        <DropdownMenuItem className="cursor-pointer">Perfil</DropdownMenuItem>
+                      </Link>
+                      {/* <Link href="/assistant">
+                        <DropdownMenuItem className="cursor-pointer">Asistente</DropdownMenuItem>
+                      </Link>
+                      <Link href="/admin">
+                        <DropdownMenuItem className="cursor-pointer">Admin</DropdownMenuItem>
+                      </Link> */}
+                      <DropdownMenuSeparator />
+                      <DropdownMenuItem className="cursor-pointer" onClick={async () => { try { await logout(); window.location.href = '/'; } catch(e) { console.error(e);} }}>Cerrar sesión</DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
                 </div>
               </div>
             </header>
@@ -87,15 +123,12 @@ export default function DashboardPage() {
               </p>
               {userProfile && (
                 <div className="mt-4 text-sm text-gray-500">
-                  Rol: <span className="font-semibold capitalize">{userProfile.role}</span>
+                  Rol: <span className="font-semibold">{getRoleLabel(userProfile.role)}</span>
                 </div>
               )}
-              <div className="mt-8 flex justify-center gap-4">
-                <button className="rounded-full bg-orange-600 hover:bg-orange-700 text-white px-6 py-3 text-sm font-semibold">Iniciar sesión</button>
-                <button className="rounded-full bg-green-500 hover:bg-green-600 text-white px-6 py-3 text-sm font-semibold">Crear cuenta</button>
-              </div>
+              
             </section>
-
+{/* 
             <section className="px-6 sm:px-12 py-12 grid grid-cols-1 lg:grid-cols-2 gap-12 items-start">
               <div className="aspect-video bg-gray-200 rounded-md grid place-items-center">
                 <div className="w-0 h-0 border-t-[18px] border-t-transparent border-l-[28px] border-l-gray-500 border-b-[18px] border-b-transparent" />
@@ -140,7 +173,7 @@ export default function DashboardPage() {
               <button onClick={() => router.push("/onboarding")} className="w-full sm:w-auto block mx-auto rounded-full bg-black text-white px-6 py-3 text-sm font-semibold">
                 Onboarding
               </button>
-            </div>
+            </div> */}
           </>
         ) : null}
       </div>

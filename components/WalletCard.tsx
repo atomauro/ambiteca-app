@@ -28,7 +28,7 @@ export default function WalletCard({ wallet }: WalletCardProps) {
   const addSessionSigner = useCallback(
     async (walletAddress: string) => {
       if (!SESSION_SIGNER_ID) {
-        console.error("SESSION_SIGNER_ID must be defined to addSessionSigner");
+        console.error("SESSION_SIGNER_ID debe estar definido para agregar un firmante de sesión");
         return;
       }
 
@@ -45,7 +45,7 @@ export default function WalletCard({ wallet }: WalletCardProps) {
           ],
         });
       } catch (error) {
-        console.error("Error adding session signer:", error);
+        console.error("Error al agregar el firmante de sesión:", error);
       } finally {
         setIsLoading(false);
       }
@@ -59,7 +59,7 @@ export default function WalletCard({ wallet }: WalletCardProps) {
       try {
         await removeSessionSigners({ address: walletAddress });
       } catch (error) {
-        console.error("Error removing session signer:", error);
+        console.error("Error al eliminar el firmante de sesión:", error);
       } finally {
         setIsLoading(false);
       }
@@ -70,7 +70,7 @@ export default function WalletCard({ wallet }: WalletCardProps) {
   const handleClientSign = useCallback(async () => {
     setIsClientSigning(true);
     try {
-      const message = `Signing this message to verify ownership of ${wallet.address}`;
+      const message = `Firmando este mensaje para verificar la propiedad de ${wallet.address}`;
       let signature;
       if (wallet.chainType === "ethereum") {
         const result = await signMessageEthereum({ message });
@@ -81,9 +81,9 @@ export default function WalletCard({ wallet }: WalletCardProps) {
         });
         signature = result.signature;
       }
-      console.log("Message signed on client! Signature: ", signature);
+      console.log("¡Mensaje firmado en el cliente! Firma: ", signature);
     } catch (error) {
-      console.error("Error signing message:", error);
+      console.error("Error al firmar el mensaje:", error);
     } finally {
       setIsClientSigning(false);
     }
@@ -97,7 +97,7 @@ export default function WalletCard({ wallet }: WalletCardProps) {
         wallet.chainType === "ethereum"
           ? "/api/ethereum/personal_sign"
           : "/api/solana/sign_message";
-      const message = `Signing this message to verify ownership of ${wallet.address}`;
+      const message = `Firmando este mensaje para verificar la propiedad de ${wallet.address}`;
       const response = await axios.post(
         path,
         {
@@ -115,13 +115,13 @@ export default function WalletCard({ wallet }: WalletCardProps) {
 
       if (response.status === 200) {
         console.log(
-          "Message signed on server! Signature: " + data.data.signature
+          "¡Mensaje firmado en el servidor! Firma: " + data.data.signature
         );
       } else {
-        throw new Error(data.error || "Failed to sign message");
+        throw new Error(data.error || "Error al firmar el mensaje");
       }
     } catch (error) {
-      console.error("Error signing message:", error);
+      console.error("Error al firmar el mensaje:", error);
     } finally {
       setIsRemoteSigning(false);
     }

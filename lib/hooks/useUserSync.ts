@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { usePrivy, useWallets } from '@privy-io/react-auth';
 import { createClient } from '@supabase/supabase-js';
 
@@ -22,6 +22,7 @@ interface UserSyncState {
 export function useUserSync() {
   const { user, authenticated, getAccessToken } = usePrivy();
   const { wallets } = useWallets();
+  const attemptedRef = useRef(false);
   
   const [state, setState] = useState<UserSyncState>({
     isLoading: false,
@@ -32,7 +33,8 @@ export function useUserSync() {
 
   // Sincronizar usuario cuando se autentica
   useEffect(() => {
-    if (authenticated && user && !state.isSynced && !state.isLoading) {
+    if (authenticated && user && !state.isSynced && !state.isLoading && !attemptedRef.current) {
+      attemptedRef.current = true;
       syncUser();
     }
   }, [authenticated, user, state.isSynced, state.isLoading]);
@@ -51,27 +53,30 @@ export function useUserSync() {
           'Content-Type': 'application/json',
           ...(privyToken ? { Authorization: `Bearer ${privyToken}` } : {}),
         },
+        body: JSON.stringify({
+          wallets: wallets.map(w => ({
+            address: w.address,
+            chain_type: 'ethereum',
+            wallet_client_type: w.walletClientType,
+            is_embedded: w.walletClientType === 'privy',
+          }))
+        })
       });
       if (!resp.ok) {
         const err = await resp.json().catch(() => ({}));
+        console.error('link-supabase failed:', err);
         throw new Error(err.error || 'No se pudo enlazar con Supabase');
       }
-      const { profile, supabaseUserId } = await resp.json();
+      const { supabaseUserId } = await resp.json();
 
-      // 2) Sincronizar wallets (usa supabase-js con anon key; asume RLS adecuada para este flujo)
-      await syncWallets(supabaseUserId);
-
-      // 3) Actualizar last_login
-      await supabase
-        .from('profiles')
-        .update({ last_login_at: new Date().toISOString() })
-        .eq('user_id', supabaseUserId);
+      // 2) Obtener perfil completo desde la vista
+      const freshProfile = await refreshProfile();
 
       setState({
         isLoading: false,
         isSynced: true,
         error: null,
-        userProfile: profile,
+        userProfile: freshProfile,
       });
 
     } catch (error) {
@@ -84,36 +89,9 @@ export function useUserSync() {
     }
   };
 
-  const syncWallets = async (userId: string) => {
-    if (!wallets.length) return;
-
-    try {
-      // Sincronizar cada wallet
-      for (const wallet of wallets) {
-        const { error } = await supabase
-          .from('user_wallets')
-          .upsert({
-            user_id: userId,
-            privy_user_id: user!.id,
-            address: wallet.address,
-            chain_type: 'ethereum', // TODO: Determinar chain type correcto desde wallet
-            wallet_client_type: wallet.walletClientType,
-            is_embedded: wallet.walletClientType === 'privy',
-          }, {
-            onConflict: 'user_id,address,chain_type'
-          });
-
-        if (error) {
-          console.error('Error syncing wallet:', wallet.address, error);
-        }
-      }
-    } catch (error) {
-      console.error('Error syncing wallets:', error);
-    }
-  };
-
   // Función para forzar re-sincronización
   const forceSync = async () => {
+    attemptedRef.current = false;
     setState(prev => ({ ...prev, isSynced: false }));
     await syncUser();
   };

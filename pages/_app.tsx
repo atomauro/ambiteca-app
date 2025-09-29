@@ -2,7 +2,8 @@ import "../styles/globals.css";
 import type { AppProps } from "next/app";
 import Head from "next/head";
 import Providers from "../components/Providers";
-import { Toaster } from "react-hot-toast";
+import { Toaster } from "@/components/ui/toaster";
+import 'react-phone-number-input/style.css'
 
 
 function MyApp({ Component, pageProps }: AppProps) {
@@ -86,7 +87,7 @@ function MyApp({ Component, pageProps }: AppProps) {
       </Head>
       <Providers>
         <Component {...pageProps} />
-        <Toaster position="top-right" toastOptions={{ duration: 3000 }} />
+        <Toaster />
       </Providers>
     </>
   );

@@ -6,6 +6,7 @@ import Link from 'next/link';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { getRoleLabel } from '@/lib/utils-client';
 import { 
   Users, 
   ArrowLeft,
@@ -199,7 +200,7 @@ export default function UsersPage() {
                           <div className="flex items-center space-x-2">
                             <h3 className="font-semibold">{user.full_name || 'Sin nombre'}</h3>
                             <Badge variant={getRoleBadgeVariant(user.role)}>
-                              {user.role}
+                              {getRoleLabel(user.role)}
                             </Badge>
                             {!user.is_active && (
                               <Badge variant="outline">Inactivo</Badge>
