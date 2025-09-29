@@ -78,7 +78,7 @@ supabase db push
     "id": "did:privy:...",
     "email": { "address": "user@example.com" },
     "phone": { "number": "+1234567890" },
-    "createdAt": "2024-01-01T00:00:00Z"
+    "createdAt": "2025-01-01T00:00:00Z"
   }
 }
 ```

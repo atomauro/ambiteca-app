@@ -101,7 +101,7 @@ export default function HomePage() {
               <span className="font-bold text-foreground">AMBITECAPP</span>
             </div>
             <p className="text-sm text-muted-foreground">
-              © 2024 AmbitecApp. Todos los derechos reservados.
+              © 2025 AmbitecApp. Todos los derechos reservados.
             </p>
           </div>
         </footer>

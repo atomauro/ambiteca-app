@@ -15,8 +15,9 @@ interface UserSyncState {
 }
 
 /**
- * Hook para sincronizar usuario de Privy con Supabase
- * Se ejecuta automáticamente cuando el usuario se autentica
+ * Hook para sincronizar usuario de Privy con Supabase (sin webhooks)
+ * 1) Llama a /api/auth/link-supabase (Service Role) para asegurar usuario + profile
+ * 2) Sincroniza wallets y marca last_login
  */
 export function useUserSync() {
   const { user, authenticated, getAccessToken } = usePrivy();
@@ -42,54 +43,35 @@ export function useUserSync() {
     setState(prev => ({ ...prev, isLoading: true, error: null }));
 
     try {
-      // 1. Verificar si el usuario ya existe en Supabase
-      const { data: existingProfile, error: fetchError } = await supabase
-        .from('profiles')
-        .select('*')
-        .eq('privy_user_id', user.id)
-        .single();
-
-      if (fetchError && fetchError.code !== 'PGRST116') {
-        throw fetchError;
+      // 1) Asegurar usuario+perfil en Supabase vía endpoint server-side (sin webhooks)
+      const privyToken = await getAccessToken();
+      const resp = await fetch('/api/auth/link-supabase', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          ...(privyToken ? { Authorization: `Bearer ${privyToken}` } : {}),
+        },
+      });
+      if (!resp.ok) {
+        const err = await resp.json().catch(() => ({}));
+        throw new Error(err.error || 'No se pudo enlazar con Supabase');
       }
+      const { profile, supabaseUserId } = await resp.json();
 
-      let userProfile = existingProfile;
+      // 2) Sincronizar wallets (usa supabase-js con anon key; asume RLS adecuada para este flujo)
+      await syncWallets(supabaseUserId);
 
-      // 2. Si no existe, crearlo
-      if (!existingProfile) {
-        const email = user.email?.address || null;
-        const phone = user.phone?.number || null;
-
-        const { data: newProfile, error: createError } = await supabase
-          .from('profiles')
-          .insert({
-            privy_user_id: user.id,
-            email,
-            phone,
-            role: 'citizen',
-            full_name: email ? email.split('@')[0] : `Usuario ${user.id.slice(-6)}`,
-          })
-          .select()
-          .single();
-
-        if (createError) throw createError;
-        userProfile = newProfile;
-      }
-
-      // 3. Sincronizar wallets
-      await syncWallets(userProfile.user_id);
-
-      // 4. Actualizar last_login
+      // 3) Actualizar last_login
       await supabase
         .from('profiles')
         .update({ last_login_at: new Date().toISOString() })
-        .eq('user_id', userProfile.user_id);
+        .eq('user_id', supabaseUserId);
 
       setState({
         isLoading: false,
         isSynced: true,
         error: null,
-        userProfile,
+        userProfile: profile,
       });
 
     } catch (error) {
