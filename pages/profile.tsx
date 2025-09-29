@@ -140,17 +140,17 @@ export default function ProfilePage() {
               </div>
             </div>
 
-            <nav className="hidden md:flex items-center gap-6">
+           {/*  <nav className="hidden md:flex items-center gap-6">
               <a href="/#inicio" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">Inicio</a>
               <a href="/#beneficios" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">Beneficios</a>
               <a href="/#materiales" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">Materiales</a>
-            </nav>
+            </nav> */}
 
             <div className="flex items-center gap-4">
-              <nav className="hidden sm:flex items-center gap-2">
+              {/* <nav className="hidden sm:flex items-center gap-2">
                 <Link href="/assistant" className="px-3 py-1 text-sm rounded-md hover:bg-gray-100 transition-colors">Asistente</Link>
                 <Link href="/admin" className="px-3 py-1 text-sm rounded-md hover:bg-gray-100 transition-colors">Admin</Link>
-              </nav>
+              </nav> */}
               <DropdownMenu>
                 <DropdownMenuTrigger className="rounded-full focus:outline-none focus:ring-2 focus:ring-ring">
                   <Avatar className="size-8">
@@ -173,8 +173,8 @@ export default function ProfilePage() {
                   </DropdownMenuLabel>
                   <DropdownMenuSeparator />
                   <Link href="/profile"><DropdownMenuItem className="cursor-pointer">Perfil</DropdownMenuItem></Link>
-                  <Link href="/assistant"><DropdownMenuItem className="cursor-pointer">Asistente</DropdownMenuItem></Link>
-                  <Link href="/admin"><DropdownMenuItem className="cursor-pointer">Admin</DropdownMenuItem></Link>
+                {/*   <Link href="/assistant"><DropdownMenuItem className="cursor-pointer">Asistente</DropdownMenuItem></Link>
+                  <Link href="/admin"><DropdownMenuItem className="cursor-pointer">Admin</DropdownMenuItem></Link> */}
                   <DropdownMenuSeparator />
                   <DropdownMenuItem className="cursor-pointer" onClick={async () => { try { await logout(); window.location.href = '/'; } catch(e) { console.error(e);} }}>Cerrar sesión</DropdownMenuItem>
                 </DropdownMenuContent>
