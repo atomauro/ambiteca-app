@@ -1,15 +1,14 @@
 import React from "react";
 import Head from "next/head";
-import Link from "next/link";
 import { GetServerSideProps } from "next";
 import { PrivyClient } from "@privy-io/server-auth";
-import { useLogin } from "@privy-io/react-auth";
+import { useLogin, usePrivy } from "@privy-io/react-auth";
 import { useRouter } from "next/router";
 import { HeroSection } from "../components/hero-section";
 import { BenefitsSection } from "../components/benefits-section";
 import { MaterialsSection } from "../components/materials-section";
-import { Button } from "../components/ui/button";
 import { Recycle } from "lucide-react";
+ 
 
 export const getServerSideProps: GetServerSideProps = async ({ req }) => {
   const cookieAuthToken = req.cookies["privy-token"];
@@ -30,6 +29,7 @@ export const getServerSideProps: GetServerSideProps = async ({ req }) => {
 export default function HomePage() {
   const router = useRouter();
   const { login } = useLogin({ onComplete: () => router.push("/dashboard") });
+  const { authenticated } = usePrivy();
 
   return (
     <>
@@ -69,17 +69,12 @@ export default function HomePage() {
               </a>
             </nav>
 
-            <div className="flex items-center gap-2">
-              <Link href="/assistant">
-                <button className="px-3 py-1 text-sm rounded-md hover:bg-gray-100 transition-colors">
-                  Asistente
-                </button>
-              </Link>
-              <button 
-                onClick={login}
-                className="px-3 py-1 text-sm rounded-md hover:bg-gray-100 transition-colors"
+            <div className="flex items-center gap-3">
+              <button
+                onClick={() => { if (authenticated) { window.location.href = '/dashboard' } else { login() } }}
+                className="px-3 py-1.5 text-sm rounded-md bg-green-600 text-white hover:bg-green-700 transition-colors"
               >
-                Administrador
+                Iniciar sesión
               </button>
             </div>
           </div>

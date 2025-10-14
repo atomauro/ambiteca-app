@@ -1,9 +1,13 @@
 import React from "react"
-import { Button } from "@/components/ui/button"
+import { useLogin, usePrivy } from "@privy-io/react-auth"
 import { ArrowRight } from "lucide-react"
+import { useRouter } from "next/router"
 import { Recycle } from "lucide-react"
 
 export function HeroSection() {
+  const router = useRouter()
+  const { login } = useLogin();
+  const { authenticated } = usePrivy();
   return (
     <section
       id="inicio"
@@ -28,13 +32,10 @@ export function HeroSection() {
                 contribuyes a un futuro más sostenible. ¡Haz la diferencia hoy!
               </p>
 
-              <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start items-center">
-                <button className="inline-flex items-center gap-2 px-6 py-3 bg-green-600 text-white rounded-md hover:bg-green-700 transition-colors">
-                  Crear cuenta
-                  {React.createElement(ArrowRight, { className: "ml-2 h-4 w-4" })}
-                </button>
-                <button className="px-6 py-3 border border-orange-500 text-orange-500 rounded-md hover:bg-orange-500 hover:text-white transition-colors">
+              <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
+                <button onClick={() => { if (authenticated) { router.push('/dashboard') } else { login() } }} className="inline-flex items-center gap-2 px-6 py-3 bg-green-600 text-white rounded-md hover:bg-green-700 transition-colors">
                   Iniciar sesión
+                  {React.createElement(ArrowRight, { className: "ml-2 h-4 w-4" })}
                 </button>
               </div>
             </div>

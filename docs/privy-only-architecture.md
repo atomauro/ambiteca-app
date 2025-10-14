@@ -174,3 +174,4 @@ NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=eyJ...
 🟢 **Listo para producción** con autenticación social completa y gestión de wallets integrada.
 
 
+
