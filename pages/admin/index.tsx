@@ -9,10 +9,12 @@ export default function AdminDashboard() {
   const { isLoading, isAuthorized } = useAdminGuard();
   const [users, setUsers] = useState<any[]>([]);
   const [materials, setMaterials] = useState<any[]>([]);
+  const [metrics, setMetrics] = useState<{users:number; ambitecas:number; deliveries:number; ppv:number}>({users:0,ambitecas:0,deliveries:0,ppv:0});
 
   useEffect(() => {
     fetch("/api/admin/users").then(r => r.json()).then(d => setUsers(d.users || []));
     fetch("/api/admin/materials").then(r => r.json()).then(d => setMaterials(d.materials || []));
+    fetch("/api/admin/metrics").then(r => r.json()).then(d => setMetrics(d));
   }, []);
 
   const usersKpi = {
@@ -54,18 +56,22 @@ export default function AdminDashboard() {
           </nav>
         </div>
 
-        <section className="mt-8 grid grid-cols-1 sm:grid-cols-3 gap-6">
+        <section className="mt-8 grid grid-cols-1 sm:grid-cols-4 gap-6">
           <div className="rounded-lg border p-5">
             <p className="text-sm text-gray-600">Usuarios</p>
-            <p className="text-3xl font-extrabold">{usersKpi.total}</p>
+            <p className="text-3xl font-extrabold">{metrics.users}</p>
           </div>
           <div className="rounded-lg border p-5">
-            <p className="text-sm text-gray-600">Activos</p>
-            <p className="text-3xl font-extrabold">{usersKpi.activos}</p>
+            <p className="text-sm text-gray-600">Ambitecas</p>
+            <p className="text-3xl font-extrabold">{metrics.ambitecas}</p>
           </div>
           <div className="rounded-lg border p-5">
-            <p className="text-sm text-gray-600">Asistentes</p>
-            <p className="text-3xl font-extrabold">{usersKpi.asistentes}</p>
+            <p className="text-sm text-gray-600">Entregas</p>
+            <p className="text-3xl font-extrabold">{metrics.deliveries}</p>
+          </div>
+          <div className="rounded-lg border p-5">
+            <p className="text-sm text-gray-600">PPV total</p>
+            <p className="text-3xl font-extrabold">{Number(metrics.ppv).toFixed(2)} PPV</p>
           </div>
         </section>
 

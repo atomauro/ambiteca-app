@@ -82,6 +82,28 @@ export default function UsersPage() {
     }
   };
 
+  const updateUserRole = async (userId: string, role: string) => {
+    try {
+      const res = await fetch('/api/admin/users', { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ user_id: userId, role }) });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data?.error || 'Error al actualizar rol');
+      await loadUsers();
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
+  const updateUserActive = async (userId: string, is_active: boolean) => {
+    try {
+      const res = await fetch('/api/admin/users', { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ user_id: userId, is_active }) });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data?.error || 'Error al actualizar estado');
+      await loadUsers();
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
   const filteredUsers = users.filter(user => {
     const matchesSearch = !searchTerm || 
       user.full_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -234,6 +256,13 @@ export default function UsersPage() {
                               </div>
                             )}
                           </div>
+
+                          <div className="mt-2 flex items-center gap-3 text-xs">
+                            <span className="text-muted-foreground">Cambiar rol:</span>
+                            <button className="underline" onClick={() => updateUserRole(user.user_id, 'citizen')}>Ciudadano</button>
+                            <button className="underline" onClick={() => updateUserRole(user.user_id, 'assistant')}>Asistente</button>
+                            <button className="underline" onClick={() => updateUserRole(user.user_id, 'admin')}>Admin</button>
+                          </div>
                         </div>
                       </div>
                       
@@ -258,6 +287,12 @@ export default function UsersPage() {
                             {user.primary_wallet_address.slice(0, 6)}...{user.primary_wallet_address.slice(-4)}
                           </div>
                         )}
+
+                        <div>
+                          <button className="px-3 py-1 rounded border text-sm" onClick={() => updateUserActive(user.user_id, !user.is_active)}>
+                            {user.is_active ? 'Desactivar' : 'Activar'}
+                          </button>
+                        </div>
                       </div>
                     </div>
                   </CardContent>
