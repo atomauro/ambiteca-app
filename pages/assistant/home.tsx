@@ -1,9 +1,61 @@
 import Head from "next/head";
 import Link from "next/link";
-import { Recycle } from "lucide-react";
-import React from "react";
+import { Recycle, UserPlus, LogIn, Clock, ArrowRight, Users, ShoppingBag } from "lucide-react";
+import React, { useEffect, useState } from "react";
+import { usePrivy } from "@privy-io/react-auth";
+import { useRouter } from "next/router";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { supabase } from "@/lib/supabase/client";
+import { Skeleton } from "@/components/ui/skeleton";
 
 export default function AssistantHome() {
+  const router = useRouter();
+  const { ready, authenticated } = usePrivy();
+  const [loading, setLoading] = useState(true);
+  const [recentDeliveries, setRecentDeliveries] = useState<any[]>([]);
+  const [todayCount, setTodayCount] = useState<number>(0);
+  const [monthCount, setMonthCount] = useState<number>(0);
+
+  useEffect(() => {
+    if (!ready) return;
+    if (!authenticated) {
+      router.replace('/');
+      return;
+    }
+    const load = async () => {
+      try {
+        setLoading(true);
+        // Cargar últimas 8 entregas atendidas por el asistente actual
+        // Nota: se requiere RLS que permita filtrar por assistant_user_id = auth.uid()
+        const { data: deliveries } = await supabase
+          .from('deliveries')
+          .select('id, delivered_at, ambiteca_id')
+          .order('delivered_at', { ascending: false })
+          .limit(8);
+        setRecentDeliveries(deliveries || []);
+
+        // Conteos simples de hoy y del mes (mock si RLS no permite aggregate)
+        const now = new Date();
+        const startOfDay = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+        const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+
+        const { data: deliveriesToday } = await supabase
+          .from('deliveries')
+          .select('id')
+          .gte('delivered_at', startOfDay.toISOString());
+        setTodayCount(deliveriesToday?.length || 0);
+
+        const { data: deliveriesMonth } = await supabase
+          .from('deliveries')
+          .select('id')
+          .gte('delivered_at', startOfMonth.toISOString());
+        setMonthCount(deliveriesMonth?.length || 0);
+      } finally {
+        setLoading(false);
+      }
+    };
+    load();
+  }, [ready, authenticated, router]);
   return (
     <>
       <Head>
@@ -42,31 +94,100 @@ export default function AssistantHome() {
             </nav> */}
 
             <div className="flex items-center gap-2">
-              <Link href="/assistant">
-                <button className="px-3 py-1 text-sm rounded-md bg-primary text-primary-foreground hover:bg-primary/90 transition-colors">
-                  Asistente
-                </button>
-              </Link>
-              <Link href="/">
-                <button className="px-3 py-1 text-sm rounded-md hover:bg-gray-100 transition-colors">
-                  Volver
-                </button>
-              </Link>
+              <Link href="/dashboard" className="px-3 py-1 text-sm rounded-md hover:bg-gray-100 transition-colors">Volver</Link>
             </div>
           </div>
         </header>
 
-        <section className="max-w-3xl mx-auto mt-24 text-center px-6 sm:px-12 py-12">
-          <h1 className="text-4xl font-extrabold">¿Qué quieres hacer hoy?</h1>
-          <div className="mt-10 flex justify-center gap-6">
-            <Link href="/assistant/login" className="rounded-full bg-orange-600 hover:bg-orange-700 text-white px-6 py-3 font-semibold">Ingresar usuario</Link>
-            <Link href="/assistant/register" className="rounded-full bg-green-500 hover:bg-green-600 text-white px-6 py-3 font-semibold">Registrar nuevo</Link>
+        <section className="px-4 sm:px-6 lg:px-8 py-10 max-w-6xl mx-auto">
+          <h1 className="text-3xl sm:text-4xl font-extrabold tracking-tight text-center">Panel del asistente</h1>
+
+          <div className="mt-8 grid grid-cols-1 md:grid-cols-3 gap-6">
+            <Card>
+              <CardHeader className="flex flex-row items-center justify-between">
+                <CardTitle className="text-base">Entregas de hoy</CardTitle>
+                <Clock className="size-4 text-muted-foreground" />
+              </CardHeader>
+              <CardContent>
+                {loading ? <Skeleton className="h-8 w-24" /> : <div className="text-3xl font-bold">{todayCount}</div>}
+                <CardDescription className="mt-2">Recibidas por ti hoy</CardDescription>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader className="flex flex-row items-center justify-between">
+                <CardTitle className="text-base">Este mes</CardTitle>
+                <Users className="size-4 text-muted-foreground" />
+              </CardHeader>
+              <CardContent>
+                {loading ? <Skeleton className="h-8 w-24" /> : <div className="text-3xl font-bold">{monthCount}</div>}
+                <CardDescription className="mt-2">Entregas atendidas</CardDescription>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader className="flex flex-row items-center justify-between">
+                <CardTitle className="text-base">Accesos rápidos</CardTitle>
+                <ArrowRight className="size-4 text-muted-foreground" />
+              </CardHeader>
+              <CardContent>
+                <div className="grid grid-cols-2 gap-3 text-sm">
+                  <Link href="/assistant/login" className="border rounded-md p-3 hover:bg-muted transition-colors flex items-center gap-2">
+                    <LogIn className="size-4" /> Ingresar usuario
+                  </Link>
+                  <Link href="/assistant/register" className="border rounded-md p-3 hover:bg-muted transition-colors flex items-center gap-2">
+                    <UserPlus className="size-4" /> Registrar nuevo
+                  </Link>
+                  <Link href="/assistant/history" className="border rounded-md p-3 hover:bg-muted transition-colors flex items-center gap-2">
+                    <Clock className="size-4" /> Historial
+                  </Link>
+                  <Link href="/assistant/rewards" className="border rounded-md p-3 hover:bg-muted transition-colors flex items-center gap-2">
+                    <ShoppingBag className="size-4" /> PPV y recompensas
+                  </Link>
+                </div>
+              </CardContent>
+            </Card>
           </div>
+
           <div className="mt-8">
-            <Link href="/assistant/history" className="text-sm underline">Ver historial</Link>
-          </div>
-          <div className="mt-4">
-            <Link href="/assistant/rewards" className="text-sm underline">Puntos y recompensas</Link>
+            <Card>
+              <CardHeader className="flex items-center justify-between">
+                <div>
+                  <CardTitle className="text-base">Entregas recientes</CardTitle>
+                  <CardDescription>Últimas 8 entregas atendidas</CardDescription>
+                </div>
+                <Clock className="size-4 text-muted-foreground" />
+              </CardHeader>
+              <CardContent>
+                {loading ? (
+                  <div className="space-y-3">
+                    {Array.from({ length: 5 }).map((_, i) => (
+                      <Skeleton key={i} className="h-10 w-full" />
+                    ))}
+                  </div>
+                ) : recentDeliveries.length === 0 ? (
+                  <div className="flex items-center justify-center py-10 text-center">
+                    <div>
+                      <Clock className="mx-auto size-8 text-muted-foreground" />
+                      <div className="mt-3 font-medium">No has registrado entregas aún</div>
+                      <div className="text-sm text-muted-foreground">Cuando registres, aparecerán aquí.</div>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="divide-y">
+                    {recentDeliveries.map((d) => (
+                      <div key={d.id} className="py-3 flex items-center justify-between text-sm">
+                        <div className="flex flex-col">
+                          <span className="font-medium">Entrega</span>
+                          <span className="text-muted-foreground">{new Date(d.delivered_at).toLocaleString()}</span>
+                        </div>
+                        <div className="text-muted-foreground">ID {d.id.slice(0, 8)}</div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </CardContent>
+            </Card>
           </div>
         </section>
       </main>
