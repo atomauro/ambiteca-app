@@ -386,7 +386,7 @@ export default function ProfilePage() {
                   </div>
                   <div>
                     <div className="text-muted-foreground">Balance PPV</div>
-                    <div className="font-medium">{userProfile?.plv_balance ?? 0} PPV</div>
+                    <div className="font-medium">{(userProfile?.ppv_balance ?? userProfile?.plv_balance ?? 0)} PPV</div>
                   </div>
                   <div>
                     <div className="text-muted-foreground">Email</div>

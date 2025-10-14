@@ -21,19 +21,12 @@ export default withAdminAuth(async function handler(req: NextApiRequest, res: Ne
       .from('deliveries')
       .select('id', { count: 'exact', head: true });
 
-    // PPV total (desde vista; mantener compatibilidad si aún es v_plv_balances)
-    let totalPpv = 0;
+    // PPV total desde v_ppv_balances (sin alias)
     const { data: ppvBalances, error: ppvErr } = await supabaseAdmin
       .from('v_ppv_balances')
       .select('balance_plv');
-    if (!ppvErr && Array.isArray(ppvBalances)) {
-      totalPpv = (ppvBalances as any[]).reduce((acc, r: any) => acc + Number(r.balance_plv || 0), 0);
-    } else {
-      const { data: plvBalances } = await supabaseAdmin
-        .from('v_plv_balances')
-        .select('balance_plv');
-      totalPpv = (plvBalances as any[] || []).reduce((acc, r: any) => acc + Number(r.balance_plv || 0), 0);
-    }
+    if (ppvErr) throw ppvErr;
+    const totalPpv = (ppvBalances as any[] || []).reduce((acc, r: any) => acc + Number(r.balance_plv || 0), 0);
 
     return res.status(200).json({
       users: totalUsers || 0,

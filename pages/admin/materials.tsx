@@ -60,8 +60,8 @@ export default function AdminMaterials() {
               <div className="mt-2 flex items-center gap-2">
                 <span className="text-sm text-gray-600">Tarifa:</span>
                 <input
-                  defaultValue={m.plv_per_kg}
-                  onChange={(e) => setMaterials(prev => prev.map(x => x.id===m.id? { ...x, plv_per_kg: e.target.value }: x))}
+                  defaultValue={m.ppv_per_kg}
+                  onChange={(e) => setMaterials(prev => prev.map(x => x.id===m.id? { ...x, ppv_per_kg: e.target.value }: x))}
                   className="w-24 rounded border px-2 py-1 text-sm"
                 />
                 <span className="text-sm">PPV/kg</span>
@@ -72,7 +72,7 @@ export default function AdminMaterials() {
                   onClick={async () => {
                     setSaving(m.id);
                     try {
-                      const res = await fetch('/api/admin/materials', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ id: m.id, plv_per_kg: m.plv_per_kg, ambiteca_id: ambSel || null }) });
+                      const res = await fetch('/api/admin/materials', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ id: m.id, ppv_per_kg: m.ppv_per_kg, ambiteca_id: ambSel || null }) });
                       const data = await res.json();
                       if (!res.ok) throw new Error(data?.error || 'Error');
                       toast.success('Tarifa guardada');

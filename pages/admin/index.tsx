@@ -24,7 +24,7 @@ export default function AdminDashboard() {
   };
 
   const dataDeliveries = users.map(u => ({ name: u.fullName.split(" ")[1] || u.fullName, value: u.deliveries }));
-  const dataPlv = users.map(u => ({ name: u.fullName.split(" ")[1] || u.fullName, value: u.plv }));
+  const dataPlv = users.map(u => ({ name: u.fullName.split(" ")[1] || u.fullName, value: u.ppv ?? u.plv }));
 
   if (isLoading) {
     return (

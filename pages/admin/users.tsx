@@ -38,7 +38,8 @@ interface UserComplete {
   primary_wallet_address: string;
   primary_wallet_chain: string;
   has_embedded_wallet: boolean;
-  plv_balance: number;
+  ppv_balance?: number;
+  plv_balance?: number;
 }
 
 export default function UsersPage() {
@@ -274,10 +275,10 @@ export default function UsersPage() {
                           </div>
                         )}
                         
-                        {user.plv_balance > 0 && (
+                        {(user.ppv_balance ?? user.plv_balance ?? 0) > 0 && (
                           <div className="text-sm">
                             <span className="font-semibold text-primary">
-                              {Number(user.plv_balance).toFixed(2)} PPV
+                              {Number(user.ppv_balance ?? user.plv_balance ?? 0).toFixed(2)} PPV
                             </span>
                           </div>
                         )}

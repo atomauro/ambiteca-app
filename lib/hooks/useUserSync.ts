@@ -124,6 +124,6 @@ export function useUserSync() {
     // Información derivada
     hasEmbeddedWallet: state.userProfile?.has_embedded_wallet || false,
     primaryWalletAddress: state.userProfile?.primary_wallet_address || null,
-    plvBalance: state.userProfile?.plv_balance || 0,
+    plvBalance: state.userProfile?.ppv_balance || state.userProfile?.plv_balance || 0,
   };
 }
