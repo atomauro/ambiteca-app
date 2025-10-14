@@ -385,8 +385,8 @@ export default function ProfilePage() {
                     <div className="font-medium break-all">{userProfile?.primary_wallet_address || '—'}</div>
                   </div>
                   <div>
-                    <div className="text-muted-foreground">Balance PLV</div>
-                    <div className="font-medium">{userProfile?.plv_balance ?? 0}</div>
+                    <div className="text-muted-foreground">Balance PPV</div>
+                    <div className="font-medium">{userProfile?.plv_balance ?? 0} PPV</div>
                   </div>
                   <div>
                     <div className="text-muted-foreground">Email</div>

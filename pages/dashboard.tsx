@@ -218,7 +218,7 @@ export default function DashboardPage() {
                       {profileLoading ? (
                         <Skeleton className="h-8 w-32" />
                       ) : (
-                        <div className="text-3xl font-bold">{userProfile?.plv_balance ?? 0} PLV</div>
+                        <div className="text-3xl font-bold">{userProfile?.plv_balance ?? 0} PPV</div>
                       )}
                       <CardDescription className="mt-2">Acumula puntos reciclando materiales.</CardDescription>
                     </CardContent>
