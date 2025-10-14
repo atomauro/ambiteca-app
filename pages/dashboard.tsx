@@ -1,6 +1,6 @@
 import React from "react";
 import { useRouter } from "next/router";
-import { useEffect } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { usePrivy } from "@privy-io/react-auth";
 import Head from "next/head";
 import Link from "next/link";
@@ -16,11 +16,74 @@ import {
 import { useUserSync } from "@/lib/hooks/useUserSync";
 import { Recycle } from "lucide-react";
 import { getRoleLabel } from "@/lib/utils-client";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { supabase } from "@/lib/supabase/client";
+import { Skeleton } from "@/components/ui/skeleton";
+import { ShoppingBag, Clock, Coins } from "lucide-react";
 
 export default function DashboardPage() {
   const router = useRouter();
   const { ready, authenticated, logout, user } = usePrivy();
   const { userProfile, isLoading: profileLoading } = useUserSync();
+
+  const [loadingCitizenData, setLoadingCitizenData] = useState(false);
+  const [deliveries, setDeliveries] = useState<any[]>([]);
+  const [rewards, setRewards] = useState<any[]>([]);
+
+  // Redirección por rol al ingresar al dashboard
+  useEffect(() => {
+    if (!ready || !authenticated) return;
+    const roleLower = (userProfile?.role || '').toLowerCase();
+    if (!roleLower) return;
+    if (roleLower === 'assistant' || roleLower === 'asistente') {
+      router.replace('/assistant/home');
+    } else if (roleLower === 'admin') {
+      router.replace('/admin');
+    }
+  }, [ready, authenticated, userProfile?.role, router]);
+
+  // Cargar datos de ciudadano: historial y catálogo
+  useEffect(() => {
+    const loadCitizen = async () => {
+      if (!authenticated || userProfile?.role !== 'citizen') return;
+      try {
+        setLoadingCitizenData(true);
+        // Buscar person_id desde profiles
+        const { data: profileRow } = await supabase
+          .from('profiles')
+          .select('person_id')
+          .eq('user_id', userProfile?.user_id as string)
+          .maybeSingle();
+
+        const personId = profileRow?.person_id as string | null | undefined;
+
+        if (personId) {
+          // Cargar entregas por persona (básico)
+          const { data: deliveriesData } = await supabase
+            .from('deliveries')
+            .select('id, delivered_at, ambiteca_id')
+            .eq('person_id', personId)
+            .order('delivered_at', { ascending: false })
+            .limit(10);
+          setDeliveries(deliveriesData || []);
+        } else {
+          setDeliveries([]);
+        }
+
+        // Cargar catálogo activo para marketplace
+        const { data: rewardsData } = await supabase
+          .from('rewards_catalog')
+          .select('id, title, description, cost_plv, image_url, is_active')
+          .eq('is_active', true)
+          .order('cost_plv', { ascending: true })
+          .limit(8);
+        setRewards(rewardsData || []);
+      } finally {
+        setLoadingCitizenData(false);
+      }
+    };
+    loadCitizen();
+  }, [authenticated, userProfile?.role, userProfile?.user_id]);
 
   useEffect(() => {
     if (ready && !authenticated) {
@@ -77,11 +140,17 @@ export default function DashboardPage() {
                     </Link>
                   </nav> */}
                   <DropdownMenu>
-                    <DropdownMenuTrigger className="rounded-full focus:outline-none focus:ring-2 focus:ring-ring">
-                      <Avatar className="size-8">
-                        <AvatarImage src={(user as any)?.google?.profilePictureUrl || (user as any)?.apple?.profilePictureUrl || "/images/avatar.png"} alt={userProfile?.full_name || "Usuario"} />
-                        <AvatarFallback>{(userProfile?.full_name || "U").slice(0, 2).toUpperCase()}</AvatarFallback>
-                      </Avatar>
+                    <DropdownMenuTrigger className="rounded-md focus:outline-none focus:ring-2 focus:ring-ring">
+                      <div className="flex items-center gap-2">
+                        <Avatar className="size-8">
+                          <AvatarImage src={(user as any)?.google?.profilePictureUrl || (user as any)?.apple?.profilePictureUrl || "/images/avatar.png"} alt={userProfile?.full_name || "Usuario"} />
+                          <AvatarFallback>{(userProfile?.full_name || "U").slice(0, 2).toUpperCase()}</AvatarFallback>
+                        </Avatar>
+                        <div className="hidden md:flex flex-col items-start leading-tight">
+                          <span className="text-sm font-medium max-w-[160px] truncate">{userProfile?.full_name || (user as any)?.google?.name || 'Usuario'}</span>
+                          <span className="text-xs text-muted-foreground max-w-[180px] truncate">{userProfile?.email || (user as any)?.email?.address || ''}</span>
+                        </div>
+                      </div>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end" className="w-56">
                       <DropdownMenuLabel>
@@ -116,7 +185,7 @@ export default function DashboardPage() {
               </div>
             </header>
 
-            <section className="px-4 sm:px-6 lg:px-8 pt-16 pb-12 text-center">
+            <section className="px-4 sm:px-6 lg:px-8 pt-16 pb-8 text-center">
               <h1 className="text-3xl sm:text-5xl font-extrabold tracking-tight">
                 Hola, {userProfile?.full_name || user?.google?.name || 'Usuario'}
               </h1>
@@ -130,6 +199,117 @@ export default function DashboardPage() {
               )}
               
             </section>
+
+            {/* Contenido por rol: Ciudadano (mostrar skeleton mientras carga) */}
+            {(profileLoading || (
+              (() => {
+                const r = (userProfile?.role || '').toLowerCase();
+                return r !== 'assistant' && r !== 'asistente' && r !== 'admin';
+              })()
+            )) && (
+              <div className="px-4 sm:px-6 lg:px-8 pb-16">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                  <Card className="md:col-span-1">
+                    <CardHeader className="flex flex-row items-center justify-between">
+                      <CardTitle className="text-base">Tus puntos</CardTitle>
+                      <Coins className="size-4 text-yellow-600" />
+                    </CardHeader>
+                    <CardContent>
+                      {profileLoading ? (
+                        <Skeleton className="h-8 w-32" />
+                      ) : (
+                        <div className="text-3xl font-bold">{userProfile?.plv_balance ?? 0} PLV</div>
+                      )}
+                      <CardDescription className="mt-2">Acumula puntos reciclando materiales.</CardDescription>
+                    </CardContent>
+                  </Card>
+
+                  <Card className="md:col-span-2">
+                    <CardHeader className="flex flex-row items-center justify-between">
+                      <CardTitle className="text-base">Historial de entregas</CardTitle>
+                      <Clock className="size-4 text-muted-foreground" />
+                    </CardHeader>
+                    <CardContent>
+                      {profileLoading || loadingCitizenData ? (
+                        <div className="space-y-3">
+                          <Skeleton className="h-10 w-full" />
+                          <Skeleton className="h-10 w-full" />
+                          <Skeleton className="h-10 w-full" />
+                        </div>
+                      ) : deliveries.length === 0 ? (
+                        <div className="flex items-center justify-center py-10 text-center">
+                          <div>
+                            <Clock className="mx-auto size-8 text-muted-foreground" />
+                            <div className="mt-3 font-medium">Aún no tienes entregas registradas</div>
+                            <div className="text-sm text-muted-foreground">Cuando recicles, verás tu historial aquí.</div>
+                          </div>
+                        </div>
+                      ) : (
+                        <div className="divide-y">
+                          {deliveries.map((d) => (
+                            <div key={d.id} className="py-3 flex items-center justify-between text-sm">
+                              <div className="flex flex-col">
+                                <span className="font-medium">Entrega</span>
+                                <span className="text-muted-foreground">{new Date(d.delivered_at).toLocaleString()}</span>
+                              </div>
+                              <div className="text-muted-foreground">ID {d.id.slice(0, 8)}</div>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </CardContent>
+                  </Card>
+                </div>
+
+                <div className="mt-8">
+                  <Card>
+                    <CardHeader className="flex flex-row items-center justify-between">
+                      <div>
+                        <CardTitle className="text-base">Marketplace</CardTitle>
+                        <CardDescription>Canjea tus puntos por recompensas</CardDescription>
+                      </div>
+                      <ShoppingBag className="size-4 text-muted-foreground" />
+                    </CardHeader>
+                    <CardContent>
+                      {profileLoading || loadingCitizenData ? (
+                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                          {Array.from({ length: 6 }).map((_, i) => (
+                            <Skeleton key={i} className="h-40 w-full" />
+                          ))}
+                        </div>
+                      ) : rewards.length === 0 ? (
+                        <div className="flex items-center justify-center py-12 text-center">
+                          <div>
+                            <ShoppingBag className="mx-auto size-8 text-muted-foreground" />
+                            <div className="mt-3 font-medium">No hay recompensas disponibles aún</div>
+                            <div className="text-sm text-muted-foreground">Pronto habrá opciones para canjear tus puntos.</div>
+                          </div>
+                        </div>
+                      ) : (
+                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                          {rewards.map((r) => (
+                            <div key={r.id} className="border rounded-lg p-4">
+                              <div className="aspect-video bg-muted rounded mb-3 overflow-hidden">
+                                {r.image_url ? (
+                                  // eslint-disable-next-line @next/next/no-img-element
+                                  <img src={r.image_url} alt={r.title} className="w-full h-full object-cover" />
+                                ) : null}
+                              </div>
+                              <div className="font-medium">{r.title}</div>
+                              <div className="text-xs text-muted-foreground mt-1 line-clamp-2">{r.description}</div>
+                              <div className="mt-3 flex items-center justify-between text-sm">
+                                <span className="font-semibold">{r.cost_plv} PLV</span>
+                                <button className="px-2 py-1 rounded bg-muted text-foreground cursor-not-allowed opacity-60">Canjear</button>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </CardContent>
+                  </Card>
+                </div>
+              </div>
+            )}
 {/* 
             <section className="px-6 sm:px-12 py-12 grid grid-cols-1 lg:grid-cols-2 gap-12 items-start">
               <div className="aspect-video bg-gray-200 rounded-md grid place-items-center">

@@ -169,11 +169,17 @@ export default function ProfilePage() {
                 <Link href="/admin" className="px-3 py-1 text-sm rounded-md hover:bg-gray-100 transition-colors">Admin</Link>
               </nav> */}
               <DropdownMenu>
-                <DropdownMenuTrigger className="rounded-full focus:outline-none focus:ring-2 focus:ring-ring">
-                  <Avatar className="size-8">
-                    <AvatarImage src={(user as any)?.google?.profilePictureUrl || (user as any)?.apple?.profilePictureUrl || '/images/avatar.png'} alt={displayName} />
-                    <AvatarFallback>{displayName.slice(0, 2).toUpperCase()}</AvatarFallback>
-                  </Avatar>
+                <DropdownMenuTrigger className="rounded-md focus:outline-none focus:ring-2 focus:ring-ring">
+                  <div className="flex items-center gap-2">
+                    <Avatar className="size-8">
+                      <AvatarImage src={(user as any)?.google?.profilePictureUrl || (user as any)?.apple?.profilePictureUrl || '/images/avatar.png'} alt={displayName} />
+                      <AvatarFallback>{displayName.slice(0, 2).toUpperCase()}</AvatarFallback>
+                    </Avatar>
+                    <div className="hidden md:flex flex-col items-start leading-tight">
+                      <span className="text-sm font-medium max-w-[160px] truncate">{displayName}</span>
+                      <span className="text-xs text-muted-foreground max-w-[180px] truncate">{email}</span>
+                    </div>
+                  </div>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end" className="w-56">
                   <DropdownMenuLabel>
