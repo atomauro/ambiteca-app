@@ -84,7 +84,7 @@ export default function AdminDashboard() {
             </div>
           </div>
           <div className="rounded-lg border p-5">
-            <h2 className="font-semibold mb-4">PLV acumulado por usuario</h2>
+            <h2 className="font-semibold mb-4">PPV acumulado por usuario</h2>
             <div className="h-64">
               <ResponsiveContainer width="100%" height="100%">
                 <LineChart data={dataPlv}>
@@ -99,12 +99,12 @@ export default function AdminDashboard() {
         </section>
 
         <section className="mt-10 rounded-lg border p-5">
-          <h2 className="font-semibold mb-4">Materiales (tarifa PLV por kg)</h2>
+          <h2 className="font-semibold mb-4">Materiales (tarifa PPV por kg)</h2>
           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-4">
             {materials.map(m => (
               <div key={m.id} className="rounded border p-4">
                 <p className="font-semibold">{m.name}</p>
-                <p className="text-sm text-gray-600 mt-1">{m.plv_per_kg} PLV/kg</p>
+                <p className="text-sm text-gray-600 mt-1">{m.plv_per_kg} PPV/kg</p>
               </div>
             ))}
           </div>

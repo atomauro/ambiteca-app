@@ -37,10 +37,10 @@ export default function ReceiptPage() {
               </div>
               <div>
                 <p className="text-4xl font-extrabold">0,000</p>
-                <p className="text-gray-600">PLV</p>
+                <p className="text-gray-600">PPV</p>
               </div>
             </div>
-            <p className="mt-10 text-xl font-bold">Total de puntos por mes 0,000 PLV</p>
+            <p className="mt-10 text-xl font-bold">Total de puntos por mes 0,000 PPV</p>
           </div>
           <div className="mt-10 flex justify-center gap-4">
             <Link href="/assistant/home" className="rounded-full bg-orange-600 text-white px-6 py-3 font-semibold">Cerrar</Link>

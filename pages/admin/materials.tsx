@@ -64,7 +64,7 @@ export default function AdminMaterials() {
                   onChange={(e) => setMaterials(prev => prev.map(x => x.id===m.id? { ...x, plv_per_kg: e.target.value }: x))}
                   className="w-24 rounded border px-2 py-1 text-sm"
                 />
-                <span className="text-sm">PLV/kg</span>
+                <span className="text-sm">PPV/kg</span>
               </div>
               <div className="mt-4 flex gap-2">
                 <button

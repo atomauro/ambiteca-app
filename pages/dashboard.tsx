@@ -298,7 +298,7 @@ export default function DashboardPage() {
                               <div className="font-medium">{r.title}</div>
                               <div className="text-xs text-muted-foreground mt-1 line-clamp-2">{r.description}</div>
                               <div className="mt-3 flex items-center justify-between text-sm">
-                                <span className="font-semibold">{r.cost_plv} PLV</span>
+                                <span className="font-semibold">{r.cost_plv} PPV</span>
                                 <button className="px-2 py-1 rounded bg-muted text-foreground cursor-not-allowed opacity-60">Canjear</button>
                               </div>
                             </div>
