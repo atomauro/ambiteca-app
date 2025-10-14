@@ -23,8 +23,8 @@ export default function AdminDashboard() {
     asistentes: users.filter(u => u.role==='assistant').length,
   };
 
-  const dataDeliveries = users.map(u => ({ name: u.fullName.split(" ")[1] || u.fullName, value: u.deliveries }));
-  const dataPlv = users.map(u => ({ name: u.fullName.split(" ")[1] || u.fullName, value: u.ppv ?? u.plv }));
+  const dataDeliveries = users.map(u => ({ name: (u.fullName || u.full_name || 'Usuario').split(" ")[0], value: u.deliveries ?? 0 }));
+  const dataPlv = users.map(u => ({ name: (u.fullName || u.full_name || 'Usuario').split(" ")[0], value: u.ppv ?? u.plv ?? 0 }));
 
   if (isLoading) {
     return (
@@ -110,7 +110,7 @@ export default function AdminDashboard() {
             {materials.map(m => (
               <div key={m.id} className="rounded border p-4">
                 <p className="font-semibold">{m.name}</p>
-                <p className="text-sm text-gray-600 mt-1">{m.plv_per_kg} PPV/kg</p>
+                <p className="text-sm text-gray-600 mt-1">{m.ppv_per_kg} PPV/kg</p>
               </div>
             ))}
           </div>

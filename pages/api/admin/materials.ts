@@ -18,7 +18,7 @@ export default withAdminAuth(async function handler(req: NextApiRequest, res: Ne
     const materials = (mats || []).map(m => ({
       id: m.id,
       name: m.name,
-      plv_per_kg: (rates?.find(r => r.material_id === m.id)?.ppv_per_kg ?? 1.0)
+      ppv_per_kg: (rates?.find(r => r.material_id === m.id)?.ppv_per_kg ?? 1.0)
     }));
     return res.status(200).json({ materials, ambitecas: ambs || [] });
   }

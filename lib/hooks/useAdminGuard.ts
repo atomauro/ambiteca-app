@@ -1,12 +1,7 @@
 import { useEffect, useState } from 'react';
 import { usePrivy } from '@privy-io/react-auth';
 import { useRouter } from 'next/router';
-import { createClient } from '@supabase/supabase-js';
-
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY!
-);
+import { supabase } from '@/lib/supabase/client';
 
 interface AdminGuardState {
   isLoading: boolean;
@@ -33,11 +28,7 @@ export function useAdminGuard() {
   useEffect(() => {
     if (!ready) return;
 
-    if (!authenticated || !user) {
-      // Redirigir al login si no está autenticado
-      router.push('/');
-      return;
-    }
+    if (!authenticated || !user) return;
 
     checkAdminAccess();
   }, [ready, authenticated, user, router]);
@@ -58,27 +49,25 @@ export function useAdminGuard() {
 
       // Buscar el perfil del usuario por privy_user_id
       const { data: profile, error: profileError } = await supabase
-        .from('profiles')
-        .select('*')
+        .from('v_user_complete')
+        .select('user_id, role, is_active')
         .eq('privy_user_id', user.id)
-        .single();
+        .maybeSingle();
 
-      if (profileError) {
-        throw new Error('Perfil no encontrado');
+      if (profileError || !profile) {
+        // Dirigir a dashboard para enlazar perfil si aún no existe
+        router.push('/dashboard');
+        setState({ isLoading: false, isAuthorized: false, profile: null, error: 'Perfil no encontrado' });
+        return;
       }
 
       // Verificar que sea admin y esté activo
       const isAuthorized = profile.role === 'admin' && profile.is_active === true;
 
       if (!isAuthorized) {
-        // Redirigir si no tiene permisos
-        router.push('/');
-        setState({
-          isLoading: false,
-          isAuthorized: false,
-          profile,
-          error: 'No tienes permisos de administrador',
-        });
+        // Enviar a dashboard en lugar de loop a inicio
+        router.push('/dashboard');
+        setState({ isLoading: false, isAuthorized: false, profile, error: 'No tienes permisos de administrador' });
         return;
       }
 
@@ -99,8 +88,8 @@ export function useAdminGuard() {
         error: error instanceof Error ? error.message : 'Error desconocido',
       });
 
-      // Redirigir en caso de error
-      router.push('/');
+      // Evitar loop; enviar a dashboard para que sincronice
+      router.push('/dashboard');
     }
   };
 

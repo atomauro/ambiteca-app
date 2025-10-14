@@ -180,7 +180,6 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       const { data: updated, error: updateErr } = await supabaseAdmin
         .from('profiles')
         .update({
-          role: 'ciudadano',
           full_name: fullName,
           email: (email || isSynthetic) ? (email ?? profileRow?.email ?? null) : profileRow?.email ?? null,
           phone: phone || null,
@@ -200,7 +199,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         .from('profiles')
         .insert({
           user_id: supabaseUserId,
-          role: 'ciudadano',
+          role: 'citizen',
           full_name: fullName,
           email: email ?? null,
           phone: phone || null,

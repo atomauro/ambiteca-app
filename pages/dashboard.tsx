@@ -192,11 +192,13 @@ export default function DashboardPage() {
               <p className="mt-4 text-gray-600 max-w-2xl mx-auto">
                 Cada material que reciclas cuenta. ¡Haz la diferencia hoy!
               </p>
-              {userProfile && (
-                <div className="mt-4 text-sm text-gray-500">
-                  Rol: <span className="font-semibold">{getRoleLabel(userProfile.role)}</span>
-                </div>
-              )}
+              <div className="mt-4 text-sm text-gray-500">
+                Rol: {profileLoading ? (
+                  <span className="inline-block align-middle"><Skeleton className="h-4 w-24 inline-block align-middle" /></span>
+                ) : (
+                  <span className="font-semibold">{getRoleLabel(userProfile?.role)}</span>
+                )}
+              </div>
               
             </section>
 
