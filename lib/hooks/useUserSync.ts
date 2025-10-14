@@ -72,6 +72,11 @@ export function useUserSync() {
       // 2) Obtener perfil completo desde la vista
       const freshProfile = await refreshProfile();
 
+      // Persist last known role for early redirects
+      try {
+        if (freshProfile?.role) localStorage.setItem('lastRole', String(freshProfile.role));
+      } catch {}
+
       setState({
         isLoading: false,
         isSynced: true,

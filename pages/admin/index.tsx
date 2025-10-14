@@ -4,12 +4,25 @@ import { useEffect, useState } from "react";
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, LineChart, Line } from "recharts";
 import { useAdminGuard } from "@/lib/hooks/useAdminGuard";
 import toast from "react-hot-toast";
+import { usePrivy } from "@privy-io/react-auth";
+import { AdminSidebar } from "@/components/admin/AdminSidebar";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { Recycle } from "lucide-react";
 
 export default function AdminDashboard() {
   const { isLoading, isAuthorized } = useAdminGuard();
   const [users, setUsers] = useState<any[]>([]);
   const [materials, setMaterials] = useState<any[]>([]);
   const [metrics, setMetrics] = useState<{users:number; ambitecas:number; deliveries:number; ppv:number}>({users:0,ambitecas:0,deliveries:0,ppv:0});
+  const { user, logout } = usePrivy();
 
   useEffect(() => {
     fetch("/api/admin/users").then(r => r.json()).then(d => setUsers(d.users || []));
@@ -46,7 +59,67 @@ export default function AdminDashboard() {
       <Head>
         <title>Admin · Panel</title>
       </Head>
-      <main className="min-h-screen bg-white px-4 sm:px-6 lg:px-8 py-10">
+      <div className="min-h-screen bg-background">
+        {/* Header */}
+        <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+          <div className="flex h-16 items-center justify-between px-4 sm:px-6 lg:px-8">
+              <div className="flex items-center gap-2">
+              <div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary">
+                <Recycle className="h-5 w-5 text-primary-foreground" />
+              </div>
+              <span className="text-xl font-bold text-foreground">AMBITECAPP</span>
+            </div>
+
+            <div className="flex items-center gap-4">
+              <nav className="hidden sm:flex items-center gap-2">
+                <Link href="/admin" className="px-3 py-1 text-sm rounded-md hover:bg-gray-100 transition-colors">Panel</Link>
+                <Link href="/admin/users" className="px-3 py-1 text-sm rounded-md hover:bg-gray-100 transition-colors">Usuarios</Link>
+                <Link href="/admin/materials" className="px-3 py-1 text-sm rounded-md hover:bg-gray-100 transition-colors">Materiales</Link>
+                <Link href="/admin/ambitecas" className="px-3 py-1 text-sm rounded-md hover:bg-gray-100 transition-colors">Ambitecas</Link>
+              </nav>
+              <DropdownMenu>
+                <DropdownMenuTrigger className="rounded-md focus:outline-none focus:ring-2 focus:ring-ring">
+                  <div className="flex items-center gap-2">
+                    <Avatar className="size-8">
+                      <AvatarImage src={(user as any)?.google?.profilePictureUrl || (user as any)?.apple?.profilePictureUrl || "/images/avatar.png"} alt={(user as any)?.google?.name || "Usuario"} />
+                      <AvatarFallback>{(((user as any)?.google?.name || 'U') as string).slice(0,2).toUpperCase()}</AvatarFallback>
+                    </Avatar>
+                    <div className="hidden md:flex flex-col items-start leading-tight">
+                      <span className="text-sm font-medium max-w-[160px] truncate">{(user as any)?.google?.name || 'Usuario'}</span>
+                      <span className="text-xs text-muted-foreground max-w-[180px] truncate">{(user as any)?.email?.address || ''}</span>
+                    </div>
+                  </div>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="w-56">
+                  <DropdownMenuLabel>
+                    <div className="flex items-center gap-3">
+                      <Avatar className="size-8">
+                        <AvatarImage src={(user as any)?.google?.profilePictureUrl || (user as any)?.apple?.profilePictureUrl || "/images/avatar.png"} alt={(user as any)?.google?.name || "Usuario"} />
+                        <AvatarFallback>{(((user as any)?.google?.name || 'U') as string).slice(0,2).toUpperCase()}</AvatarFallback>
+                      </Avatar>
+                      <div>
+                        <div className="text-sm font-medium leading-none">{(user as any)?.google?.name || 'Usuario'}</div>
+                        <div className="text-xs text-muted-foreground truncate max-w-[160px]">{(user as any)?.email?.address || ''}</div>
+                      </div>
+                    </div>
+                  </DropdownMenuLabel>
+                  <DropdownMenuSeparator />
+                  <Link href="/admin"><DropdownMenuItem className="cursor-pointer">Panel</DropdownMenuItem></Link>
+                  <Link href="/admin/users"><DropdownMenuItem className="cursor-pointer">Usuarios</DropdownMenuItem></Link>
+                  <Link href="/admin/materials"><DropdownMenuItem className="cursor-pointer">Materiales</DropdownMenuItem></Link>
+                  <Link href="/admin/ambitecas"><DropdownMenuItem className="cursor-pointer">Ambitecas</DropdownMenuItem></Link>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem className="cursor-pointer" onClick={async () => { try { localStorage.removeItem('lastRole'); await logout(); window.location.href = '/'; } catch(e) { console.error(e);} }}>Cerrar sesión</DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            </div>
+          </div>
+        </header>
+
+        <main className="px-4 sm:px-6 lg:px-8 py-6">
+        <div className="flex gap-6">
+          <AdminSidebar />
+          <div className="flex-1">
         <div className="flex flex-wrap items-center justify-between gap-4">
           <h1 className="text-2xl sm:text-3xl font-extrabold">Panel administrativo</h1>
           <nav className="flex gap-3 text-sm">
@@ -130,7 +203,10 @@ export default function AdminDashboard() {
             <QuickCreateAmbiteca />
           </div>
         </section>
+          </div>
+        </div>
       </main>
+      </div>
     </>
   );
 }

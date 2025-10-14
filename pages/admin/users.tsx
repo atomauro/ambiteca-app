@@ -18,12 +18,10 @@ import {
   Search,
   Filter
 } from 'lucide-react';
-import { createClient } from '@supabase/supabase-js';
+import { supabase } from '@/lib/supabase/client';
+import { AdminSidebar } from '@/components/admin/AdminSidebar';
 
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY!
-);
+// Usar cliente compartido para evitar múltiples GoTrueClient
 
 interface UserComplete {
   user_id: string;
@@ -163,6 +161,9 @@ export default function UsersPage() {
         </header>
 
         <main className="p-6">
+          <div className="flex gap-6">
+            <AdminSidebar />
+            <div className="flex-1">
           {/* Filtros */}
           <Card className="mb-6">
             <CardHeader>
@@ -210,112 +211,57 @@ export default function UsersPage() {
             </div>
           ) : (
             <div className="grid gap-4">
-              {filteredUsers.map((user) => (
-                <Card key={user.user_id}>
-                  <CardContent className="p-6">
-                    <div className="flex items-start justify-between">
-                      <div className="flex items-start space-x-4">
-                        <div className="flex h-12 w-12 items-center justify-center rounded-full bg-primary/10">
-                          <Users className="h-6 w-6 text-primary" />
-                        </div>
-                        
-                        <div className="space-y-1">
-                          <div className="flex items-center space-x-2">
-                            <h3 className="font-semibold">{user.full_name || 'Sin nombre'}</h3>
-                            <Badge variant={getRoleBadgeVariant(user.role)}>
-                              {getRoleLabel(user.role)}
-                            </Badge>
-                            {!user.is_active && (
-                              <Badge variant="outline">Inactivo</Badge>
-                            )}
+              <div className="overflow-x-auto rounded-md border">
+                <table className="w-full text-sm">
+                  <thead className="bg-muted/50">
+                    <tr>
+                      <th className="text-left p-3 font-medium">Usuario</th>
+                      <th className="text-left p-3 font-medium">Rol</th>
+                      <th className="text-left p-3 font-medium">PPV</th>
+                      <th className="text-left p-3 font-medium">Wallet</th>
+                      <th className="text-right p-3 font-medium">Acciones</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {filteredUsers.map((u) => (
+                      <tr key={u.user_id} className="border-t">
+                        <td className="p-3">
+                          <div className="font-medium">{u.full_name || 'Sin nombre'}</div>
+                          <div className="text-xs text-muted-foreground">{u.email || ''}</div>
+                        </td>
+                        <td className="p-3">
+                          <div className="flex items-center gap-2">
+                            <Badge variant={getRoleBadgeVariant(u.role)}>{getRoleLabel(u.role)}</Badge>
+                            {!u.is_active && (<Badge variant="outline">Inactivo</Badge>)}
                           </div>
-                          
-                          <div className="flex items-center space-x-4 text-sm text-muted-foreground">
-                            {user.email && (
-                              <div className="flex items-center space-x-1">
-                                <Mail className="h-3 w-3" />
-                                <span>{user.email}</span>
-                              </div>
-                            )}
-                            {user.phone && (
-                              <div className="flex items-center space-x-1">
-                                <Phone className="h-3 w-3" />
-                                <span>{user.phone}</span>
-                              </div>
-                            )}
+                          <div className="mt-1 flex gap-2 text-xs">
+                            <button onClick={() => updateUserRole(u.user_id, 'citizen')} className="underline">Ciudadano</button>
+                            <button onClick={() => updateUserRole(u.user_id, 'assistant')} className="underline">Asistente</button>
+                            <button onClick={() => updateUserRole(u.user_id, 'admin')} className="underline">Admin</button>
                           </div>
-                          
-                          <div className="flex items-center space-x-4 text-sm text-muted-foreground">
-                            <div className="flex items-center space-x-1">
-                              <Calendar className="h-3 w-3" />
-                              <span>Registrado: {new Date(user.created_at).toLocaleDateString('es-CO')}</span>
-                            </div>
-                            {user.last_login_at && (
-                              <div className="flex items-center space-x-1">
-                                <Activity className="h-3 w-3" />
-                                <span>Último acceso: {new Date(user.last_login_at).toLocaleDateString('es-CO')}</span>
-                              </div>
-                            )}
+                        </td>
+                        <td className="p-3">{Number(u.ppv_balance ?? u.plv_balance ?? 0).toFixed(2)} PPV</td>
+                        <td className="p-3 text-xs text-muted-foreground font-mono">{u.primary_wallet_address ? `${u.primary_wallet_address.slice(0,6)}...${u.primary_wallet_address.slice(-4)}` : '—'}</td>
+                        <td className="p-3 text-right">
+                          <div className="flex justify-end gap-2">
+                            <Link href={`/admin/users/${u.user_id}`} className="px-3 py-1 rounded border">Ver</Link>
+                            <button onClick={() => updateUserActive(u.user_id, !u.is_active)} className="px-3 py-1 rounded border">{u.is_active ? 'Desactivar' : 'Activar'}</button>
                           </div>
-
-                          <div className="mt-2 flex items-center gap-3 text-xs">
-                            <span className="text-muted-foreground">Cambiar rol:</span>
-                            <button className="underline" onClick={() => updateUserRole(user.user_id, 'citizen')}>Ciudadano</button>
-                            <button className="underline" onClick={() => updateUserRole(user.user_id, 'assistant')}>Asistente</button>
-                            <button className="underline" onClick={() => updateUserRole(user.user_id, 'admin')}>Admin</button>
-                          </div>
-                        </div>
-                      </div>
-                      
-                      <div className="text-right space-y-2">
-                        {user.has_embedded_wallet && (
-                          <div className="flex items-center justify-end space-x-2">
-                            <Wallet className="h-4 w-4 text-green-500" />
-                            <span className="text-sm text-muted-foreground">Wallet embebida</span>
-                          </div>
-                        )}
-                        
-                        {(user.ppv_balance ?? user.plv_balance ?? 0) > 0 && (
-                          <div className="text-sm">
-                            <span className="font-semibold text-primary">
-                              {Number(user.ppv_balance ?? user.plv_balance ?? 0).toFixed(2)} PPV
-                            </span>
-                          </div>
-                        )}
-                        
-                        {user.primary_wallet_address && (
-                          <div className="text-xs text-muted-foreground font-mono">
-                            {user.primary_wallet_address.slice(0, 6)}...{user.primary_wallet_address.slice(-4)}
-                          </div>
-                        )}
-
-                        <div>
-                          <button className="px-3 py-1 rounded border text-sm" onClick={() => updateUserActive(user.user_id, !user.is_active)}>
-                            {user.is_active ? 'Desactivar' : 'Activar'}
-                          </button>
-                        </div>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
-              
-              {filteredUsers.length === 0 && (
-                <Card>
-                  <CardContent className="p-12 text-center">
-                    <Users className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-                    <h3 className="text-lg font-semibold mb-2">No se encontraron usuarios</h3>
-                    <p className="text-muted-foreground">
-                      {searchTerm || roleFilter !== 'all' 
-                        ? 'Intenta ajustar los filtros de búsqueda'
-                        : 'No hay usuarios registrados en el sistema'
-                      }
-                    </p>
-                  </CardContent>
-                </Card>
-              )}
+                        </td>
+                      </tr>
+                    ))}
+                    {filteredUsers.length === 0 && (
+                      <tr>
+                        <td colSpan={5} className="p-8 text-center text-muted-foreground">No se encontraron usuarios</td>
+                      </tr>
+                    )}
+                  </tbody>
+                </table>
+              </div>
             </div>
           )}
+            </div>
+          </div>
         </main>
       </div>
     </>

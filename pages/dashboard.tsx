@@ -32,7 +32,16 @@ export default function DashboardPage() {
 
   // Redirección por rol al ingresar al dashboard
   useEffect(() => {
-    if (!ready || !authenticated) return;
+    if (!ready) return;
+    if (!authenticated) {
+      // Intento de redirección temprana usando rol cacheado
+      try {
+        const lastRole = localStorage.getItem('lastRole')?.toLowerCase();
+        if (lastRole === 'admin') { router.replace('/admin'); return; }
+        if (lastRole === 'assistant') { router.replace('/assistant/home'); return; }
+      } catch {}
+      return;
+    }
     const roleLower = (userProfile?.role || '').toLowerCase();
     if (!roleLower) return;
     if (roleLower === 'assistant' || roleLower === 'asistente') {
@@ -154,7 +163,7 @@ export default function DashboardPage() {
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end" className="w-56">
                       <DropdownMenuLabel>
-                        <div className="flex items-center gap-3">
+              <div className="flex items-center gap-3">
                           <Avatar className="size-8">
                             <AvatarImage src={(user as any)?.google?.profilePictureUrl || (user as any)?.apple?.profilePictureUrl || "/images/avatar.png"} alt={userProfile?.full_name || "Usuario"} />
                             <AvatarFallback>{(userProfile?.full_name || "U").slice(0, 2).toUpperCase()}</AvatarFallback>
@@ -178,11 +187,11 @@ export default function DashboardPage() {
                         <DropdownMenuItem className="cursor-pointer">Admin</DropdownMenuItem>
                       </Link> */}
                       <DropdownMenuSeparator />
-                      <DropdownMenuItem className="cursor-pointer" onClick={async () => { try { await logout(); window.location.href = '/'; } catch(e) { console.error(e);} }}>Cerrar sesión</DropdownMenuItem>
+                      <DropdownMenuItem className="cursor-pointer" onClick={async () => { try { localStorage.removeItem('lastRole'); await logout(); window.location.href = '/'; } catch(e) { console.error(e);} }}>Cerrar sesión</DropdownMenuItem>
                     </DropdownMenuContent>
                   </DropdownMenu>
                 </div>
-              </div>
+            </div>
             </header>
 
             <section className="px-4 sm:px-6 lg:px-8 pt-16 pb-8 text-center">
@@ -192,7 +201,7 @@ export default function DashboardPage() {
               <p className="mt-4 text-gray-600 max-w-2xl mx-auto">
                 Cada material que reciclas cuenta. ¡Haz la diferencia hoy!
               </p>
-              <div className="mt-4 text-sm text-gray-500">
+                <div className="mt-4 text-sm text-gray-500">
                 Rol: {profileLoading ? (
                   <span className="inline-block align-middle"><Skeleton className="h-4 w-24 inline-block align-middle" /></span>
                 ) : (

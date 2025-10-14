@@ -4,6 +4,7 @@ import Head from "next/head";
 import Providers from "../components/Providers";
 import { Toaster } from "@/components/ui/toaster";
 import 'react-phone-number-input/style.css'
+import DevErrorSuppressor from "@/components/DevErrorSuppressor";
 
 
 function MyApp({ Component, pageProps }: AppProps) {
@@ -86,6 +87,7 @@ function MyApp({ Component, pageProps }: AppProps) {
         />
       </Head>
       <Providers>
+        <DevErrorSuppressor />
         <Component {...pageProps} />
         <Toaster />
       </Providers>

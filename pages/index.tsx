@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 import Head from "next/head";
 import { GetServerSideProps } from "next";
 import { PrivyClient } from "@privy-io/server-auth";
@@ -29,7 +29,18 @@ export const getServerSideProps: GetServerSideProps = async ({ req }) => {
 export default function HomePage() {
   const router = useRouter();
   const { login } = useLogin({ onComplete: () => router.push("/dashboard") });
-  const { authenticated } = usePrivy();
+  const { ready, authenticated } = usePrivy();
+
+  useEffect(() => {
+    if (ready && authenticated) {
+      try {
+        const lastRole = localStorage.getItem('lastRole')?.toLowerCase();
+        if (lastRole === 'admin') { router.replace('/admin'); return; }
+        if (lastRole === 'assistant') { router.replace('/assistant/home'); return; }
+      } catch {}
+      router.replace('/dashboard');
+    }
+  }, [ready, authenticated, router]);
 
   return (
     <>

@@ -200,7 +200,7 @@ export default function ProfilePage() {
                 {/*   <Link href="/assistant"><DropdownMenuItem className="cursor-pointer">Asistente</DropdownMenuItem></Link>
                   <Link href="/admin"><DropdownMenuItem className="cursor-pointer">Admin</DropdownMenuItem></Link> */}
                   <DropdownMenuSeparator />
-                  <DropdownMenuItem className="cursor-pointer" onClick={async () => { try { await logout(); window.location.href = '/'; } catch(e) { console.error(e);} }}>Cerrar sesión</DropdownMenuItem>
+                  <DropdownMenuItem className="cursor-pointer" onClick={async () => { try { localStorage.removeItem('lastRole'); await logout(); window.location.href = '/'; } catch(e) { console.error(e);} }}>Cerrar sesión</DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
             </div>
