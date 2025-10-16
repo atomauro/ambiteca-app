@@ -15,7 +15,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { useUserSync } from "@/lib/hooks/useUserSync";
-import { Recycle } from "lucide-react";
+import Image from "next/image";
 import { getRoleLabel } from "@/lib/utils-client";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { supabase } from "@/lib/supabase/client";
@@ -25,7 +25,8 @@ import { ShoppingBag, Clock, Coins } from "lucide-react";
 export default function DashboardPage() {
   const router = useRouter();
   const { ready, authenticated, logout, user } = usePrivy();
-  const { userProfile, isLoading: profileLoading } = useUserSync();
+  const { userProfile, isLoading: profileLoading, refreshProfile } = useUserSync();
+  const [pointsRefreshing, setPointsRefreshing] = useState(false);
 
   const [loadingCitizenData, setLoadingCitizenData] = useState(false);
   const [deliveries, setDeliveries] = useState<any[]>([]);
@@ -134,8 +135,8 @@ export default function DashboardPage() {
             <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
               <div className="flex h-16 items-center justify-between px-4 sm:px-6 lg:px-8">
                 <div className="flex items-center gap-2">
-                  <div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary">
-                    {React.createElement(Recycle, { className: "h-5 w-5 text-primary-foreground" })}
+                  <div className="flex h-8 w-8 items-center justify-center rounded-full bg-white ring-1 ring-primary">
+                    <Image src="/favicons/icon.png" alt="Ambitecapp" width={20} height={20} className="h-5 w-5 object-contain" />
                   </div>
                   <span className="text-xl font-bold text-foreground">AMBITECAPP</span>
                 </div>
@@ -208,10 +209,18 @@ export default function DashboardPage() {
                       <div className="text-3xl font-bold">{Number(userProfile?.ppv_balance ?? userProfile?.plv_balance ?? 0).toFixed(2)} PPV</div>
                       )}
                       <CardDescription className="mt-2">Acumula puntos reciclando materiales.</CardDescription>
-                    <div className="mt-4">
+                    <div className="mt-4 flex items-center gap-2">
                       <Link href="/rewards" className="inline-flex items-center rounded-md bg-blue-600 hover:bg-blue-700 text-white px-3 py-2 text-sm font-medium">
                         Ver recompensas
                       </Link>
+                      <button
+                        type="button"
+                        onClick={async () => { try { setPointsRefreshing(true); await refreshProfile(); } finally { setPointsRefreshing(false); } }}
+                        disabled={pointsRefreshing}
+                        className="inline-flex items-center rounded-md bg-muted hover:bg-muted/80 disabled:opacity-60 text-foreground px-3 py-2 text-sm font-medium"
+                      >
+                        {pointsRefreshing ? 'Actualizando…' : 'Actualizar'}
+                      </button>
                     </div>
                     </CardContent>
                   </Card>

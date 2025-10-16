@@ -65,6 +65,9 @@ export default function CitizenRewardsPage() {
             </div>
           )}
         </section>
+        <div className="text-center pb-10">
+          <button onClick={() => history.back()} className="rounded-full border px-6 py-2 text-sm hover:bg-muted">Volver</button>
+        </div>
       </main>
     </>
   );

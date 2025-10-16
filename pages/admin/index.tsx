@@ -17,7 +17,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Recycle } from "lucide-react";
+import Image from "next/image";
 import { Button } from "@/components/ui/button";
 
 export default function AdminDashboard() {
@@ -94,8 +94,8 @@ export default function AdminDashboard() {
         <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
           <div className="flex h-16 items-center justify-between px-4 sm:px-6 lg:px-8">
               <div className="flex items-center gap-2">
-              <div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary">
-                <Recycle className="h-5 w-5 text-primary-foreground" />
+              <div className="flex h-8 w-8 items-center justify-center rounded-full bg-white ring-1 ring-primary">
+                <Image src="/favicons/icon.png" alt="Ambitecapp" width={20} height={20} className="h-5 w-5 object-contain" />
               </div>
               <span className="text-xl font-bold text-foreground">AMBITECAPP</span>
             </div>
