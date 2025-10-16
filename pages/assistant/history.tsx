@@ -9,7 +9,7 @@ export default function HistoryLanding() {
       <Head>
         <title>Historial</title>
       </Head>
-      <main className="min-h-screen bg-white px-6 sm:px-12 py-12">
+      <main className="min-h-screen bg-white px-6 sm:px-12 pt-6 pb-12">
         <AssistantHeader showBackButton={false} />
 
         <section className="max-w-3xl mx-auto mt-24 text-center">

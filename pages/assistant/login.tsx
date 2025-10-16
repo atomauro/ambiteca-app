@@ -16,7 +16,7 @@ export default function AssistantIdentify() {
       <Head>
         <title>Iniciar sesión · Asistente</title>
       </Head>
-      <main className="min-h-screen bg-white px-6 sm:px-12 py-12">
+      <main className="min-h-screen bg-white px-6 sm:px-12 pt-6 pb-12">
         <AssistantHeader showBackButton={false} />
 
         <section className="max-w-xl mx-auto mt-16 text-center">
