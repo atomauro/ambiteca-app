@@ -7,6 +7,7 @@ import toast from "react-hot-toast";
 import { usePrivy } from "@privy-io/react-auth";
 import { AdminSidebar } from "@/components/admin/AdminSidebar";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Skeleton } from "@/components/ui/skeleton";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -16,19 +17,44 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Recycle } from "lucide-react";
+import { Button } from "@/components/ui/button";
 
 export default function AdminDashboard() {
   const { isLoading, isAuthorized } = useAdminGuard();
   const [users, setUsers] = useState<any[]>([]);
   const [materials, setMaterials] = useState<any[]>([]);
-  const [metrics, setMetrics] = useState<{users:number; ambitecas:number; deliveries:number; ppv:number}>({users:0,ambitecas:0,deliveries:0,ppv:0});
+  const [ambs, setAmbs] = useState<any[]>([]);
+  const [metrics, setMetrics] = useState<any>({users:0,ambitecas:0,deliveries:0,ppv:0,materialsWithRate:0,rewardsActive:0,rewardsOutOfStock:0,topMaterials:[]});
+  const [metricsLoading, setMetricsLoading] = useState(true);
   const { user, logout } = usePrivy();
 
+  const [ambSel, setAmbSel] = useState<string>("");
+  const refreshAll = async () => {
+    try {
+      setMetricsLoading(true);
+      fetch("/api/admin/users").then(r => r.json()).then(d => setUsers(d.users || []));
+      fetch("/api/admin/materials").then(r => r.json()).then(d => { setMaterials(d.materials || []); setAmbs(d.ambitecas || []); });
+      const url = new URL('/api/admin/metrics', window.location.origin);
+      if (ambSel) url.searchParams.set('ambiteca_id', ambSel);
+      const res = await fetch(url.toString());
+      const d = await res.json();
+      if (!res.ok || d?.error) throw new Error(d?.error || 'No se pudieron cargar métricas');
+      setMetrics(d || {});
+      toast.success('Actualizado');
+    } catch (e:any) {
+      toast.error(e.message || 'Error al actualizar');
+    } finally {
+      setMetricsLoading(false);
+    }
+  };
   useEffect(() => {
     fetch("/api/admin/users").then(r => r.json()).then(d => setUsers(d.users || []));
-    fetch("/api/admin/materials").then(r => r.json()).then(d => setMaterials(d.materials || []));
-    fetch("/api/admin/metrics").then(r => r.json()).then(d => setMetrics(d));
-  }, []);
+    fetch("/api/admin/materials").then(r => r.json()).then(d => { setMaterials(d.materials || []); setAmbs(d.ambitecas || []); });
+    const url = new URL('/api/admin/metrics', window.location.origin);
+    if (ambSel) url.searchParams.set('ambiteca_id', ambSel);
+    setMetricsLoading(true);
+    fetch(url.toString()).then(async r => { const d = await r.json(); if (!r.ok || d?.error) { toast.error(d?.error || 'No se pudieron cargar métricas'); return; } setMetrics(d || {}); }).finally(()=> setMetricsLoading(false));
+  }, [ambSel]);
 
   const usersKpi = {
     total: users.length,
@@ -116,24 +142,46 @@ export default function AdminDashboard() {
           <div className="flex-1">
         <div className="flex flex-wrap items-center justify-between gap-4">
           <h1 className="text-2xl sm:text-3xl font-extrabold">Panel administrativo</h1>
+          <div className="flex items-center gap-2">
+            <span className="text-sm text-muted-foreground">Ambiteca:</span>
+            <select value={ambSel} onChange={(e)=>setAmbSel(e.target.value)} className="px-3 py-2 border rounded-md bg-background">
+              <option value="">Global</option>
+              {ambs.map((a:any)=> (
+                <option key={a.id} value={a.id}>{a.name}</option>
+              ))}
+            </select>
+            <Button size="sm" variant="outline" onClick={refreshAll} disabled={metricsLoading}>Actualizar</Button>
+          </div>
         </div>
 
         <section className="mt-8 grid grid-cols-1 sm:grid-cols-4 gap-6">
           <div className="rounded-lg border p-5">
             <p className="text-sm text-gray-600">Usuarios</p>
-            <p className="text-3xl font-extrabold">{metrics.users}</p>
+            {metricsLoading ? <Skeleton className="h-8 w-16" /> : <p className="text-3xl font-extrabold">{metrics.users || 0}</p>}
           </div>
           <div className="rounded-lg border p-5">
             <p className="text-sm text-gray-600">Ambitecas</p>
-            <p className="text-3xl font-extrabold">{metrics.ambitecas}</p>
+            {metricsLoading ? <Skeleton className="h-8 w-16" /> : <p className="text-3xl font-extrabold">{metrics.ambitecas || 0}</p>}
           </div>
           <div className="rounded-lg border p-5">
             <p className="text-sm text-gray-600">Entregas</p>
-            <p className="text-3xl font-extrabold">{metrics.deliveries}</p>
+            {metricsLoading ? <Skeleton className="h-8 w-16" /> : <p className="text-3xl font-extrabold">{metrics.deliveries || 0}</p>}
           </div>
           <div className="rounded-lg border p-5">
             <p className="text-sm text-gray-600">PPV total</p>
-            <p className="text-3xl font-extrabold">{Number(metrics.ppv).toFixed(2)} PPV</p>
+            {metricsLoading ? <Skeleton className="h-8 w-24" /> : <p className="text-3xl font-extrabold">{Number.isFinite(Number(metrics.ppv)) ? Number(metrics.ppv).toFixed(2) : '0.00'} PPV</p>}
+          </div>
+          <div className="rounded-lg border p-5">
+            <p className="text-sm text-gray-600">Materiales con tarifa vigente</p>
+            {metricsLoading ? <Skeleton className="h-8 w-16" /> : <p className="text-3xl font-extrabold">{metrics.materialsWithRate ?? 0}</p>}
+          </div>
+          <div className="rounded-lg border p-5">
+            <p className="text-sm text-gray-600">Recompensas activas</p>
+            {metricsLoading ? <Skeleton className="h-8 w-16" /> : <p className="text-3xl font-extrabold">{metrics.rewardsActive ?? 0}</p>}
+          </div>
+          <div className="rounded-lg border p-5">
+            <p className="text-sm text-gray-600">Sin stock</p>
+            {metricsLoading ? <Skeleton className="h-8 w-16" /> : <p className="text-3xl font-extrabold">{metrics.rewardsOutOfStock ?? 0}</p>}
           </div>
         </section>
 
@@ -153,17 +201,39 @@ export default function AdminDashboard() {
           </div>
           <div className="rounded-lg border p-5">
             <h2 className="font-semibold mb-4">PPV acumulado por usuario</h2>
+            {metricsLoading ? (
+              <Skeleton className="h-64 w-full" />
+            ) : (
+              <div className="h-64">
+                <ResponsiveContainer width="100%" height="100%">
+                  <LineChart data={dataPlv}>
+                    <XAxis dataKey="name" hide={false} tick={{ fontSize: 12 }} />
+                    <YAxis />
+                    <Tooltip />
+                    <Line type="monotone" dataKey="value" stroke="#0ea5e9" strokeWidth={2} />
+                  </LineChart>
+                </ResponsiveContainer>
+              </div>
+            )}
+          </div>
+        </section>
+
+        <section className="mt-10 rounded-lg border p-5">
+          <h2 className="font-semibold mb-4">Top materiales por PPV (últimos 30 días)</h2>
+          {metricsLoading ? (
+            <Skeleton className="h-64 w-full" />
+          ) : (
             <div className="h-64">
               <ResponsiveContainer width="100%" height="100%">
-                <LineChart data={dataPlv}>
-                  <XAxis dataKey="name" hide={false} tick={{ fontSize: 12 }} />
+                <BarChart data={Array.isArray((metrics as any).topMaterials) ? (metrics as any).topMaterials : []}>
+                  <XAxis dataKey="name" hide={false} tick={{ fontSize: 12 }} interval={0} angle={-20} height={60} />
                   <YAxis />
                   <Tooltip />
-                  <Line type="monotone" dataKey="value" stroke="#0ea5e9" strokeWidth={2} />
-                </LineChart>
+                  <Bar dataKey="value" fill="#6366f1" radius={[4,4,0,0]} />
+                </BarChart>
               </ResponsiveContainer>
             </div>
-          </div>
+          )}
         </section>
 
         <section className="mt-10 rounded-lg border p-5">
