@@ -176,7 +176,12 @@ export default function DashboardPage() {
                 Rol: {profileLoading ? (
                   <span className="inline-block align-middle"><Skeleton className="h-4 w-24 inline-block align-middle" /></span>
                 ) : (
-                  <span className="font-semibold">{getRoleLabel(userProfile?.role)}</span>
+                  (() => {
+                    const role = (userProfile?.role || '').toLowerCase();
+                    const label = role === 'admin' ? 'Administrador' : role === 'assistant' ? 'Asistente' : 'Ciudadano';
+                    const color = role === 'admin' ? 'bg-red-100 text-red-800' : role === 'assistant' ? 'bg-blue-100 text-blue-800' : 'bg-green-100 text-green-800';
+                    return <span className={`inline-flex items-center rounded-full px-3 py-1 text-xs font-semibold ${color}`}>{label}</span>;
+                  })()
                 )}
               </div>
               
