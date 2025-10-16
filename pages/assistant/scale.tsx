@@ -1,49 +1,100 @@
 import Head from "next/head";
-import Image from "next/image";
+import AssistantHeader from "@/components/AssistantHeader";
+import { useEffect, useState } from "react";
+import toast from "react-hot-toast";
 import { useRouter } from "next/router";
 
 export default function ScalePage() {
   const router = useRouter();
   const name = (router.query.name as string) || "Asistente";
   const material = (router.query.material as string) || "Material";
+  const materialId = (router.query.material_id as string) || "";
+  const unit = (router.query.unit as string) || "kg";
+  const [imageUrl, setImageUrl] = useState<string | null>(null);
+  const [weight, setWeight] = useState<string>("");
 
-  const goNext = () => router.push({ pathname: "/assistant/weight", query: router.query });
+  const formatUnit = (u?: string): string => {
+    const s = (u || '').trim().toLowerCase();
+    if (!s) return '';
+    if (["l", "lt", "lts", "lit", "litro", "litros", "liter", "liters"].includes(s)) return "litro";
+    if (["unidad", "unidades", "uni", "unit", "units"].includes(s)) return "unidad";
+    return s;
+  };
+
+  useEffect(() => {
+    if (!materialId) return;
+    (async () => {
+      try {
+        const url = new URL('/api/admin/materials', window.location.origin);
+        url.searchParams.set('id', materialId);
+        const res = await fetch(url.toString());
+        const d = await res.json();
+        if (res.ok && d?.material?.image_url) setImageUrl(d.material.image_url as string);
+      } catch {}
+    })();
+  }, [materialId]);
+
+  const goNext = () => {
+    const raw = (weight || "").trim();
+    if (raw.includes(',')) {
+      return toast.error('Usa punto (.) para decimales');
+    }
+    const regex = /^\d+(?:\.\d{1,3})?$/; // solo punto, hasta 3 decimales
+    if (!regex.test(raw)) {
+      return toast.error('Formato inválido: usa punto (.) y máximo 3 decimales');
+    }
+    const num = Number(raw);
+    if (!Number.isFinite(num) || num <= 0) {
+      return toast.error('Ingresa un peso válido mayor a 0');
+    }
+    router.push({ pathname: "/assistant/summary", query: { ...router.query, weight: raw } });
+  };
 
   return (
     <>
       <Head>
         <title>Sube el material a la báscula</title>
       </Head>
-      <main className="min-h-screen bg-white px-6 sm:px-12 py-12">
-        <header className="flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <Image src="/images/logoambiteca.png" alt="Ambitecapp" width={36} height={36} />
-            <span className="font-semibold tracking-wide">AMBITECAPP</span>
+      <main className="min-h-screen bg-background">
+        <AssistantHeader showBackButton={false} />
+
+        <section className="px-4 sm:px-6 lg:px-8 py-10 max-w-xl mx-auto text-center">
+          <h1 className="text-3xl sm:text-4xl font-extrabold">{name},</h1>
+          <h2 className="text-3xl sm:text-4xl font-extrabold mt-2">Ingresa el peso de la báscula</h2>
+
+          <div className="mt-10 flex flex-col items-center">
+            {imageUrl ? (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img src={imageUrl} alt={material} className="w-24 h-24 sm:w-28 sm:h-28 rounded-full object-cover" />
+            ) : (
+              <div className="w-24 h-24 sm:w-28 sm:h-28 rounded-full bg-muted" />
+            )}
+            <p className="mt-3 font-semibold">{material}</p>
+            <p className="text-xs text-muted-foreground">Medida: {formatUnit(unit)}</p>
           </div>
-          <div className="flex items-center gap-3">
-            <span className="text-sm">0.0000</span>
-            <span className="w-6 h-6 rounded-full bg-green-500 inline-block" />
-          </div>
-        </header>
 
-        <div className="mt-4">
-          <a href="/" className="text-sm underline">Volver al inicio</a>
-        </div>
-
-        <section className="max-w-4xl mx-auto mt-20 text-center">
-          <h1 className="text-4xl font-extrabold">{name},</h1>
-          <h2 className="text-4xl font-extrabold mt-2">Sube el material a la báscula</h2>
-
-          <div className="mt-12 flex items-center justify-center gap-10">
-            <div className="text-center">
-              <div className="w-24 h-24 rounded-full bg-gray-200 mx-auto" />
-              <p className="mt-2 font-semibold">{material}</p>
+          <form onSubmit={(e) => { e.preventDefault(); goNext(); }} className="mt-8 space-y-4">
+            <div className="relative w-full max-w-md mx-auto">
+              <input
+                value={weight}
+                onChange={(e) => setWeight(e.target.value)}
+                placeholder="0.00"
+                className="w-full rounded-full bg-gray-100 pl-5 pr-16 py-3"
+                required
+                inputMode="decimal"
+                pattern="[0-9]+(\.[0-9]{1,3})?"
+                title="Usa punto (.) y máximo 3 decimales"
+              />
+              <span className="pointer-events-none absolute inset-y-0 right-4 flex items-center text-sm text-muted-foreground">
+                {formatUnit(unit)}
+              </span>
             </div>
-            <span className="text-3xl font-bold">→</span>
-            <div className="w-28 h-28 bg-gray-200" />
-          </div>
-
-          <button onClick={goNext} className="mt-12 rounded-full bg-green-500 hover:bg-green-600 text-white px-8 py-3 font-semibold">Continuar</button>
+            <div className="text-xs text-muted-foreground">Usa punto (.) para decimales. Máximo 3.</div>
+            <div className="flex justify-center gap-4">
+              <button type="button" onClick={() => router.back()} className="rounded-full border px-6 py-2 text-sm hover:bg-muted">Volver</button>
+              <button type="submit" className="rounded-full bg-green-500 hover:bg-green-600 text-white px-8 py-3 font-semibold">Continuar</button>
+            </div>
+          </form>
         </section>
       </main>
     </>

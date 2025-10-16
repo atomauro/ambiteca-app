@@ -115,7 +115,7 @@ export default function SummaryPage() {
               <div className="flex flex-wrap items-center justify-between gap-3">
                 <p className="text-sm">Borrador sin confirmar (ID: {draftId}). Revisa y confirma para acreditar PLV.</p>
                 <button
-                  onClick={() => router.push({ pathname: "/assistant/weight", query: { ...router.query } })}
+                  onClick={() => router.push({ pathname: "/assistant/scale", query: { ...router.query } })}
                   className="text-sm rounded-full bg-yellow-500 hover:bg-yellow-600 text-white px-4 py-2"
                 >
                   Editar peso
@@ -144,7 +144,7 @@ export default function SummaryPage() {
             {txHash ? <p>Tx hash: {txHash}</p> : null}
           </div>
           <div className="mt-8 flex justify-center gap-4">
-            <button className="rounded-full bg-orange-600 text-white px-6 py-3 font-semibold" onClick={() => router.back()}>Volver a pesar</button>
+            <button className="rounded-full bg-orange-600 text-white px-6 py-3 font-semibold" onClick={() => router.push({ pathname: "/assistant/scale", query: { ...router.query } })}>Volver a pesar</button>
             <button 
               onClick={done} 
               disabled={loading || awarding} 
