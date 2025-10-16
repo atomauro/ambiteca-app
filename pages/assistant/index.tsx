@@ -3,10 +3,26 @@ import Head from "next/head";
 import Link from "next/link";
 import { useRouter } from "next/router";
 import { Recycle } from "lucide-react";
+import { useEffect, useState } from "react";
+import { Skeleton } from "@/components/ui/skeleton";
 
 export default function AssistantLanding() {
   const router = useRouter();
-  const handleEnter = () => router.push("/assistant/home");
+  const [ambs, setAmbs] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [ambSel, setAmbSel] = useState<string>("");
+  useEffect(() => {
+    const load = async () => {
+      setLoading(true);
+      try {
+        const res = await fetch('/api/admin/ambitecas');
+        const d = await res.json();
+        if (res.ok) setAmbs(d.ambitecas || []);
+      } finally { setLoading(false); }
+    };
+    load();
+  }, []);
+  const handleEnter = () => router.push({ pathname: "/assistant/home", query: { ambiteca_id: ambSel } });
 
   return (
     <>
@@ -66,7 +82,14 @@ export default function AssistantLanding() {
           <h1 className="text-4xl font-extrabold">Selecciona la ambiteca</h1>
           <div className="mt-8 space-y-5">
             <div className="mx-auto max-w-xl">
-              <div className="rounded-full bg-gray-100 px-5 py-3 text-left">San Luis</div>
+              {loading ? (
+                <Skeleton className="h-10 w-full rounded-full" />
+              ) : (
+                <select value={ambSel} onChange={(e)=>setAmbSel(e.target.value)} className="w-full rounded-full bg-gray-100 px-5 py-3">
+                  <option value="">Global</option>
+                  {ambs.map((a)=> (<option key={a.id} value={a.id}>{a.name}</option>))}
+                </select>
+              )}
             </div>
             <div>
               <p className="text-lg font-semibold">Hora de entrada</p>

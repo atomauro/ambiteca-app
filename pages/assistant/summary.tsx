@@ -2,18 +2,11 @@ import Head from "next/head";
 import { useRouter } from "next/router";
 import { useMemo, useState } from "react";
 import toast from "react-hot-toast";
-import { usePrivy, useWallets } from "@privy-io/react-auth";
-import { usePerlaVerde } from "../../lib/hooks/usePerlaVerde";
-import { PerlaVerdeClient } from "../../lib/contracts/client";
 import AssistantHeader from "../../components/AssistantHeader";
 
 export default function SummaryPage() {
   const router = useRouter();
-  const { authenticated } = usePrivy();
-  const { wallets } = useWallets();
-  const { mintForDelivery, isConnected } = usePerlaVerde();
-  
-  const material = (router.query.material as string) || "Papel";
+  const material = (router.query.material as string) || "Material";
   const weightRaw = (router.query.weight as string) || "0,00";
   const weightKg = useMemo(() => {
     const n = Number((weightRaw || "0").replace(",", "."));
@@ -22,14 +15,10 @@ export default function SummaryPage() {
 
   const [loading, setLoading] = useState(false);
   const [deliveryId, setDeliveryId] = useState<string | null>(null);
-  const [awardedPlv, setAwardedPlv] = useState<number | null>(null);
-  const [mintingTokens, setMintingTokens] = useState(false);
+  const [awardedPpv, setAwardedPpv] = useState<number | null>(null);
+  const [awarding, setAwarding] = useState(false);
+  const [txHash, setTxHash] = useState<string | null>(null);
   const draftId = (router.query.draftId as string) || null;
-
-  // Obtener wallet del usuario
-  const userWallet = useMemo(() => {
-    return wallets.find(wallet => wallet.walletClientType === 'privy');
-  }, [wallets]);
 
   const confirmDelivery = async () => {
     if (loading) return null;
@@ -39,21 +28,16 @@ export default function SummaryPage() {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          personId: `${router.query.docType || "CC"}-${router.query.doc || "0000"}`,
-          assistantUserId: "assistant-1",
-          ambitecaId: "ambiteca-1",
-          items: [{ materialId: material, weightKg: weightKg }],
-          draftId
+          personDoc: `${router.query.docType || "CC"}-${router.query.doc || "0000"}`,
+          ambiteca_id: (router.query.ambiteca_id as string) || 'global',
+          items: [{ material_id: (router.query.material_id as string) || '', weight_kg: weightKg }]
         }),
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data?.error || "Error registrando entrega");
-      setDeliveryId(data.deliveryId);
-      setAwardedPlv(data.awardedPlv);
+      setDeliveryId(data.delivery_id);
+      setAwardedPpv(data.ppv_awarded);
       toast.success("Entrega confirmada");
-      if (data.deletedDraft) {
-        toast.success("Borrador eliminado");
-      }
       return data;
     } catch (e: any) {
       toast.error(e.message || "No se pudo confirmar");
@@ -63,62 +47,29 @@ export default function SummaryPage() {
     }
   };
 
-  // Mintear tokens PPV en blockchain
-  const mintTokensOnChain = async (plvAmount: number, deliveryIdStr: string) => {
-    if (!authenticated || !userWallet || !isConnected) {
-      toast.error('Wallet no conectada');
-      return false;
-    }
-
-    try {
-      setMintingTokens(true);
-      
-      // Convertir PLV a wei (18 decimales)
-      const amountWei = PerlaVerdeClient.parseTokens(plvAmount.toString());
-      
-      const result = await mintForDelivery({
-        to: userWallet.address,
-        amount: amountWei,
-        deliveryId: deliveryIdStr,
-      });
-
-      if (result) {
-        toast.success('¡Tokens PPV minteados exitosamente!');
-        return true;
-      }
-      
-      return false;
-    } catch (error) {
-      console.error('Error minting tokens:', error);
-      toast.error('Error al mintear tokens PPV');
-      return false;
-    } finally {
-      setMintingTokens(false);
-    }
-  };
-
   const done = async () => {
-    let plv = awardedPlv;
+    let ppv = awardedPpv;
     let currentDeliveryId = deliveryId;
     
     // Confirmar entrega si no está confirmada
-    if (plv == null) {
+    if (ppv == null) {
       const data = await confirmDelivery();
       if (!data) return;
-      plv = data.awardedPlv;
-      currentDeliveryId = data.deliveryId;
+      ppv = data.ppv_awarded;
+      currentDeliveryId = data.delivery_id;
     }
-
-    // Mintear tokens en blockchain si el usuario está autenticado
-    if (authenticated && userWallet && isConnected && plv && plv > 0 && currentDeliveryId) {
-      const success = await mintTokensOnChain(plv, currentDeliveryId);
-      if (!success) {
-        // Continuar aunque falle el minting, pero mostrar advertencia
-        toast('Entrega registrada, pero no se pudieron mintear los tokens PPV', {
-          icon: '⚠️',
-          duration: 5000,
-        });
-      }
+    // Marcar onchain (mock) y obtener hash
+    if (ppv && ppv > 0 && currentDeliveryId) {
+      try {
+        setAwarding(true);
+        const res = await fetch('/api/deliveries/award', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ delivery_id: currentDeliveryId }) });
+        const d = await res.json();
+        if (res.ok) {
+          setTxHash(d.tx_hash || null);
+          toast.success('PPV acreditado (mock onchain)');
+        }
+      } catch {}
+      finally { setAwarding(false); }
     }
     
     router.push({ 
@@ -126,7 +77,8 @@ export default function SummaryPage() {
       query: { 
         ...router.query, 
         deliveryId: currentDeliveryId || "", 
-        plv: plv ?? 0 
+        ppv: ppv ?? 0,
+        txHash: txHash || ''
       } 
     });
   };
@@ -170,51 +122,34 @@ export default function SummaryPage() {
             </div>
             <div className="bg-gray-200 rounded-lg p-8">
               <p className="font-bold text-xl">Equivalente</p>
-              <p className="text-4xl mt-4">{awardedPlv != null ? awardedPlv.toFixed(3) : "—"}</p>
-              <p className="mt-2">Perla Verde</p>
+              <p className="text-4xl mt-4">{awardedPpv != null ? awardedPpv.toFixed(3) : "—"}</p>
+              <p className="mt-2">PPV</p>
             </div>
           </div>
           <div className="max-w-3xl mx-auto text-left mt-8 text-sm">
             <p>Material: {material}</p>
             <p>Peso kg: {weightKg.toFixed(2)}</p>
-            <p>Puntos Perla Verde: {awardedPlv != null ? awardedPlv.toFixed(3) : "—"}</p>
+            <p>PPV: {awardedPpv != null ? awardedPpv.toFixed(3) : "—"}</p>
             {deliveryId ? <p>ID de entrega: {deliveryId}</p> : null}
+            {txHash ? <p>Tx hash: {txHash}</p> : null}
           </div>
           <div className="mt-8 flex justify-center gap-4">
             <button className="rounded-full bg-orange-600 text-white px-6 py-3 font-semibold" onClick={() => router.back()}>Volver a pesar</button>
             <button 
               onClick={done} 
-              disabled={loading || mintingTokens} 
+              disabled={loading || awarding} 
               className="rounded-full bg-green-500 hover:bg-green-600 text-white px-6 py-3 font-semibold disabled:opacity-60 flex items-center gap-2"
             >
               {loading && "Registrando…"}
-              {mintingTokens && (
+              {awarding && (
                 <>
                   <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                  Minteando PPV...
+                  Acreditando PPV...
                 </>
               )}
               {!loading && !mintingTokens && "Aceptar"}
             </button>
           </div>
-          
-          {/* Información sobre el minting */}
-          {authenticated && userWallet && (
-            <div className="mt-6 text-sm text-gray-600 bg-blue-50 border border-blue-200 rounded-md p-3">
-              <p className="flex items-center gap-2">
-                <span className="w-4 h-4 rounded-full bg-blue-500 flex items-center justify-center">
-                  <span className="text-white text-xs">ℹ</span>
-                </span>
-                Los tokens PPV se mintearán automáticamente en tu wallet: {userWallet.address.slice(0, 6)}...{userWallet.address.slice(-4)}
-              </p>
-            </div>
-          )}
-          
-          {!authenticated && (
-            <div className="mt-6 text-sm text-yellow-600 bg-yellow-50 border border-yellow-200 rounded-md p-3">
-              <p>Para recibir tokens PPV automáticamente, inicia sesión con tu cuenta.</p>
-            </div>
-          )}
         </section>
       </main>
     </>

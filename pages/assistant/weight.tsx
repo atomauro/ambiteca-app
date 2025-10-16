@@ -1,14 +1,42 @@
 import Head from "next/head";
 import Image from "next/image";
 import { useRouter } from "next/router";
-import { useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import toast from "react-hot-toast";
 
 export default function WeightPage() {
   const router = useRouter();
-  const material = (router.query.material as string) || "Papel";
+  const material = (router.query.material as string) || "Material";
+  const materialId = (router.query.material_id as string) || "";
+  const unit = (router.query.unit as string) || "kg";
+  const ambitecaId = (router.query.ambiteca_id as string) || "";
   const [weight, setWeight] = useState("0,00");
   const [draftId, setDraftId] = useState<string | null>(null);
+  const [ppvRate, setPpvRate] = useState<number>(0);
+
+  useEffect(() => {
+    if (!materialId) return;
+    (async () => {
+      try {
+        const url = new URL('/api/admin/materials', window.location.origin);
+        url.searchParams.set('id', materialId);
+        const res = await fetch(url.toString());
+        const d = await res.json();
+        if (!res.ok) throw new Error(d?.error || 'No se pudo cargar tarifa');
+        const rates: any[] = d.rates || [];
+        const today = new Date().toISOString().slice(0,10);
+        const matchAmb = ambitecaId ? rates.find(r => r.ambiteca_id === ambitecaId && r.valid_from <= today && (!r.valid_to || r.valid_to >= today)) : null;
+        const matchGlobal = rates.find(r => !r.ambiteca_id && r.valid_from <= today && (!r.valid_to || r.valid_to >= today));
+        const rate = Number(matchAmb?.ppv_per_kg ?? matchGlobal?.ppv_per_kg ?? 0);
+        setPpvRate(rate);
+      } catch (e) {
+        setPpvRate(0);
+      }
+    })();
+  }, [materialId, ambitecaId]);
+
+  const weightNumber = useMemo(() => Number((weight || "0").replace(",", ".")) || 0, [weight]);
+  const estimated = useMemo(() => (ppvRate || 0) * weightNumber, [ppvRate, weightNumber]);
 
   const saveDraft = async () => {
     try {
@@ -17,9 +45,11 @@ export default function WeightPage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           personDoc: `${router.query.docType || "CC"}-${router.query.doc || "0000"}`,
-          ambitecaId: "ambiteca-1",
+          ambitecaId: ambitecaId || 'global',
+          materialId: materialId || null,
           material,
-          weightKg: Number((weight || "0").replace(",", "."))
+          weightKg: weightNumber,
+          estimatedPpv: estimated
         })
       });
       const data = await res.json();
@@ -67,7 +97,9 @@ export default function WeightPage() {
             </div>
             <div>
               <p className="font-semibold">Material: {material}</p>
-              <p className="font-semibold mt-1">Medida: kg</p>
+              <p className="font-semibold mt-1">Medida: {unit}</p>
+              <div className="mt-1 text-sm text-muted-foreground">Tarifa: {ppvRate} PPV / {unit}</div>
+              <div className="mt-1 text-sm font-semibold">Estimado: {estimated.toFixed(2)} PPV</div>
               <input value={weight} onChange={(e) => setWeight(e.target.value)} placeholder="Peso" className="mt-4 w-full max-w-md rounded-full bg-gray-100 px-5 py-3" />
               <div className="mt-8 flex gap-4">
                 <button onClick={saveDraft} className="rounded-full bg-orange-600 text-white px-6 py-3 font-semibold">Guardar</button>

@@ -4,8 +4,8 @@ import { useRouter } from "next/router";
 
 export default function ScalePage() {
   const router = useRouter();
-  const name = (router.query.name as string) || "Juan";
-  const material = (router.query.material as string) || "Papel";
+  const name = (router.query.name as string) || "Asistente";
+  const material = (router.query.material as string) || "Material";
 
   const goNext = () => router.push({ pathname: "/assistant/weight", query: router.query });
 
