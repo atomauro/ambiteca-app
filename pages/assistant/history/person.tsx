@@ -1,8 +1,10 @@
 import Head from "next/head";
 import AssistantHeader from "@/components/AssistantHeader";
 import Link from "next/link";
+import { useRouter } from "next/router";
 
 export default function HistoryPerson() {
+  const router = useRouter();
   return (
     <>
       <Head>
@@ -23,6 +25,9 @@ export default function HistoryPerson() {
             </select>
             <input placeholder="Número de documento" className="w-full rounded-full bg-gray-100 px-5 py-3" />
             <Link href="/assistant/history/person/detail" className="inline-block rounded-full bg-green-500 hover:bg-green-600 text-white px-8 py-3 font-semibold">Entrar</Link>
+          </div>
+          <div className="mt-8">
+            <button onClick={() => router.back()} className="rounded-full border px-6 py-2 text-sm hover:bg-muted">Volver</button>
           </div>
         </section>
       </main>

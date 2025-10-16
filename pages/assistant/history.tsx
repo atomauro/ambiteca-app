@@ -1,9 +1,11 @@
 import Head from "next/head";
 import Image from "next/image";
 import Link from "next/link";
+import { useRouter } from "next/router";
 import AssistantHeader from "@/components/AssistantHeader";
 
 export default function HistoryLanding() {
+  const router = useRouter();
   return (
     <>
       <Head>
@@ -17,6 +19,9 @@ export default function HistoryLanding() {
           <div className="mt-10 flex justify-center gap-6">
             <Link href="/assistant/history/material" className="rounded-full bg-orange-600 hover:bg-orange-700 text-white px-6 py-3 font-semibold">Material</Link>
             <Link href="/assistant/history/person" className="rounded-full bg-green-500 hover:bg-green-600 text-white px-6 py-3 font-semibold">Personas</Link>
+          </div>
+          <div className="mt-8">
+            <button onClick={() => router.back()} className="rounded-full border px-6 py-2 text-sm hover:bg-muted">Volver</button>
           </div>
         </section>
       </main>

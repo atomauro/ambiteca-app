@@ -4,9 +4,11 @@ import { usePrivy, useWallets } from "@privy-io/react-auth";
 import { usePerlaVerde } from "../../lib/hooks/usePerlaVerde";
 import { PerlaVerdeClient } from "../../lib/contracts/client";
 import AssistantHeader from "../../components/AssistantHeader";
+import { useRouter } from "next/router";
 import toast from "react-hot-toast";
 
 export default function RewardsPage() {
+  const router = useRouter();
   const { authenticated, login } = usePrivy();
   const { wallets } = useWallets();
   const { balance, transfer, refreshBalance, isConnected, userAddress } = usePerlaVerde();
@@ -189,6 +191,9 @@ export default function RewardsPage() {
               </div>
             </div>
           )}
+          <div className="mt-10 text-center">
+            <button onClick={() => router.back()} className="rounded-full border px-6 py-2 text-sm hover:bg-muted">Volver</button>
+          </div>
         </section>
       </main>
     </>
