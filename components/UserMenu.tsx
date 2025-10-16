@@ -9,12 +9,14 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { usePrivy } from "@privy-io/react-auth";
+import { useUserSync } from "@/lib/hooks/useUserSync";
 
 export default function UserMenu() {
   const { user, logout } = usePrivy();
+  const { userProfile } = useUserSync();
   const avatarUrl = (user as any)?.google?.profilePictureUrl || (user as any)?.apple?.profilePictureUrl || "/images/avatar.png";
   const displayName = (user as any)?.google?.name || (user as any)?.apple?.name || ((user as any)?.email?.address ? (user as any)?.email?.address.split('@')[0] : 'Usuario');
-  const emailAddr = (user as any)?.email?.address || '';
+  const emailAddr = (user as any)?.email?.address || (userProfile as any)?.email || '';
 
   return (
     <DropdownMenu>
