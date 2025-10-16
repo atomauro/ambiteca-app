@@ -178,20 +178,7 @@ export default function AdminDashboard() {
           </div>
         </section>
 
-        <section className="mt-10 grid grid-cols-1 md:grid-cols-2 gap-6">
-          <div className="rounded-lg border p-5">
-            <h3 className="font-semibold mb-3">Accesos rápidos</h3>
-            <div className="flex flex-wrap gap-3 text-sm">
-              <Link href="/admin/users" className="rounded bg-gray-100 px-4 py-2">Usuarios</Link>
-              <Link href="/admin/materials" className="rounded bg-gray-100 px-4 py-2">Materiales</Link>
-              <Link href="/admin/ambitecas" className="rounded bg-gray-100 px-4 py-2">Ambitecas</Link>
-            </div>
-          </div>
-          <div className="rounded-lg border p-5">
-            <h3 className="font-semibold mb-3">Crear nueva ambiteca</h3>
-            <QuickCreateAmbiteca />
-          </div>
-        </section>
+        {/* Secciones de acceso rápido y creación de ambiteca removidas a solicitud */}
           </div>
         </div>
       </main>
@@ -200,32 +187,6 @@ export default function AdminDashboard() {
   );
 }
 
-function QuickCreateAmbiteca() {
-  const [name, setName] = useState("");
-  const [loading, setLoading] = useState(false);
-  const [ok, setOk] = useState<string | null>(null);
-  const submit = async () => {
-    if (!name.trim()) return;
-    setLoading(true);
-    try {
-      const res = await fetch('/api/admin/ambitecas', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ name }) });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data?.error || 'Error');
-      setOk(data.id || 'ok');
-      setName("");
-      toast.success('Ambiteca creada');
-    } catch (e: any) {
-      toast.error(e.message || 'No se pudo crear la ambiteca');
-    }
-    setLoading(false);
-  };
-  return (
-    <div className="flex flex-col sm:flex-row gap-3">
-      <input value={name} onChange={(e)=>setName(e.target.value)} placeholder="Nombre de la ambiteca" className="rounded border px-3 py-2 text-sm flex-1" />
-      <button onClick={submit} disabled={loading} className="rounded bg-green-600 text-white px-4 py-2 text-sm disabled:opacity-60">{loading? 'Creando…':'Crear'}</button>
-      {ok ? <span className="text-xs text-green-700">Creada ({ok})</span> : null}
-    </div>
-  );
-}
+// Componente de creación rápida eliminado
 
 

@@ -125,6 +125,7 @@ export default function AdminAmbitecas() {
                 <table className="w-full text-sm">
                     <thead className="bg-muted/50">
                       <tr>
+                      <th className="text-left p-3 font-medium">Imagen</th>
                       <th className="text-left p-3 font-medium">Nombre</th>
                       <th className="text-left p-3 font-medium">Dirección</th>
                       <th className="text-left p-3 font-medium">Ciudad</th>
@@ -135,6 +136,13 @@ export default function AdminAmbitecas() {
                     <tbody>
                       {filtered.map(a => (
                         <tr key={a.id} className="border-t">
+                          <td className="p-3">
+                            {(a as any).image_url ? (
+                              <img src={(a as any).image_url} alt="amb" className="h-10 w-10 object-cover rounded" />
+                            ) : (
+                              <div className="h-10 w-10 rounded bg-muted grid place-items-center text-[10px] text-muted-foreground">N/A</div>
+                            )}
+                          </td>
                           <td className="p-3">{a.name}</td>
                           <td className="p-3 text-muted-foreground">{(a as any).address || '—'}</td>
                           <td className="p-3 text-muted-foreground">{(a as any).city || '—'}</td>
@@ -149,7 +157,7 @@ export default function AdminAmbitecas() {
                         </tr>
                       ))}
                       {filtered.length===0 && (
-                        <tr><td colSpan={5} className="p-8 text-center text-muted-foreground">No se encontraron ambitecas</td></tr>
+                        <tr><td colSpan={6} className="p-8 text-center text-muted-foreground">No se encontraron ambitecas</td></tr>
                       )}
                     </tbody>
                   </table>
