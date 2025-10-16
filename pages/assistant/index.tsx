@@ -38,7 +38,7 @@ export default function AssistantLanding() {
   return (
     <>
       <Head>
-        <title>AMBITECA APP · Asistente</title>
+        <title>AMBITECAPP · Asistente</title>
       </Head>
       <div className="min-h-screen bg-background">
         {/* Header */}

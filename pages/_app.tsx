@@ -8,8 +8,8 @@ import DevErrorSuppressor from "@/components/DevErrorSuppressor";
 
 
 function MyApp({ Component, pageProps }: AppProps) {
-  const SITE_NAME = "AMBITECA APP";
-  const SITE_TITLE = "AMBITECA APP – Reciclaje y puntos Perla Verde (PLV) en San Luis, Antioquia";
+  const SITE_NAME = "AMBITECAPP";
+  const SITE_TITLE = "AMBITECAPP – Reciclaje y puntos Perla Verde (PLV) en San Luis, Antioquia";
   const SITE_DESC =
     "Proyecto del municipio de San Luis, Antioquia: registra reciclaje, pesa materiales y gana puntos cripto Perla Verde (PLV).";
   const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000";

@@ -6,18 +6,21 @@ import toast from "react-hot-toast";
 
 export default function AssistantIdentify() {
   const router = useRouter();
-  const [name, setName] = useState("Juan");
-  const [docType, setDocType] = useState("CC");
-  const [doc, setDoc] = useState("1000000");
+  const [name, setName] = useState("");
+  const [docType, setDocType] = useState("");
+  const [doc, setDoc] = useState("");
+  const [email, setEmail] = useState("");
 
   const goNext = () => {
     const nameOk = (name || "").trim().length > 1;
     const docTypeOk = !!docType;
     const docOk = (doc || "").trim().length > 0;
+    const emailOk = /.+@.+\..+/.test((email || "").trim());
     if (!nameOk) return toast.error("Ingresa un nombre válido");
     if (!docTypeOk) return toast.error("Selecciona el tipo de documento");
     if (!docOk) return toast.error("Ingresa el número de documento");
-    router.push({ pathname: "/assistant/materials", query: { name: name.trim(), docType, doc: doc.trim() } });
+    if (!emailOk) return toast.error("Ingresa un correo válido");
+    router.push({ pathname: "/assistant/materials", query: { name: name.trim(), docType, doc: doc.trim(), email: email.trim() } });
   };
 
   useEffect(() => {
@@ -25,15 +28,17 @@ export default function AssistantIdentify() {
     const qName = (router.query.name as string) || "";
     const qDoc = (router.query.doc as string) || "";
     const qDocType = (router.query.docType as string) || "";
-    setName((prev) => (prev && prev.trim().length > 0 ? prev : (qName || "Juan")));
-    setDoc((prev) => (prev && prev.trim().length > 0 ? prev : (qDoc || "1000000")));
-    setDocType((prev) => (prev && prev.length > 0 ? prev : (qDocType || "CC")));
+    const qEmail = (router.query.email as string) || "";
+    setName((prev) => (prev && prev.trim().length > 0 ? prev : (qName || "")));
+    setDoc((prev) => (prev && prev.trim().length > 0 ? prev : (qDoc || "")));
+    setDocType((prev) => (prev && prev.length > 0 ? prev : (qDocType || "")));
+    setEmail((prev) => (prev && prev.trim().length > 0 ? prev : (qEmail || "")));
   }, [router.isReady, router.query]);
 
   return (
     <>
       <Head>
-        <title>Iniciar sesión · Asistente</title>
+        <title>AMBITECAPP - Asistente</title>
       </Head>
       <main className="min-h-screen bg-background">
         <AssistantHeader showBackButton={false} />
@@ -52,6 +57,7 @@ export default function AssistantIdentify() {
               <option value="PP">Pasaporte</option>
             </select>
             <input value={doc} onChange={(e) => setDoc(e.target.value)} placeholder="Número de documento" className="w-full rounded-full bg-gray-100 px-5 py-3" required />
+            <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="Correo" className="w-full rounded-full bg-gray-100 px-5 py-3" required />
             <button type="submit" className="w-full rounded-full bg-green-500 hover:bg-green-600 text-white px-8 py-3 font-semibold">Comenzar carga</button>
           </form>
           <div className="mt-8">

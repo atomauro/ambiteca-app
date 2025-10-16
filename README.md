@@ -1,4 +1,4 @@
-# AMBITECA APP
+# AMBITECAPP
 
 Aplicación web en Next.js para gestionar reciclaje en puntos físicos (ambitecas) con integración completa de tokens PerlaVerde (PPV) usando Privy y contratos inteligentes.
 

@@ -64,7 +64,7 @@ export default function AssistantHome() {
   return (
     <>
       <Head>
-        <title>AMBITECA APP · ¿Qué quieres hacer hoy?</title>
+        <title>AMBITECAPP · ¿Qué quieres hacer hoy?</title>
       </Head>
       <main className="min-h-screen bg-background">
         {/* Header */}

@@ -110,7 +110,7 @@ export default function DashboardPage() {
     return (
       <>
         <Head>
-          <title>AMBITECA APP</title>
+          <title>AMBITECAPP</title>
         </Head>
         <div className="fixed inset-0 z-[100] bg-black/40 grid place-items-center">
           <div className="bg-white rounded-md shadow px-6 py-5 flex items-center gap-3">
@@ -125,7 +125,7 @@ export default function DashboardPage() {
   return (
     <>
       <Head>
-        <title>AMBITECA APP</title>
+        <title>AMBITECAPP</title>
       </Head>
       <div className="min-h-screen bg-background">
         {ready && authenticated ? (
