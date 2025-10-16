@@ -1,27 +1,23 @@
 import Head from "next/head";
 import Link from "next/link";
-import { useEffect, useState } from "react";
-import type { GetServerSideProps } from "next";
-import { createSupabaseServer } from "../../lib/supabase/server";
+import { useRouter } from "next/router";
+import { useEffect, useMemo, useState } from "react";
 import toast from "react-hot-toast";
-
-export const getServerSideProps: GetServerSideProps = async (ctx) => {
-  const supabase = createSupabaseServer(ctx.req as any);
-  const { data } = await supabase.auth.getUser();
-  const userId = data.user?.id;
-  if (!userId) return { redirect: { destination: "/auth/login", permanent: false }, props: {} };
-  const { data: profile } = await supabase.from("profiles").select("role,is_active").eq("user_id", userId).maybeSingle();
-  if (!profile || profile.role !== "admin" || profile.is_active === false) {
-    return { redirect: { destination: "/", permanent: false }, props: {} };
-  }
-  return { props: {} };
-};
+import { useAdminGuard } from "@/lib/hooks/useAdminGuard";
+import { AdminSidebar } from "@/components/admin/AdminSidebar";
+import { Search, Filter, Package, ArrowLeft } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 
 export default function AdminMaterials() {
+  const router = useRouter();
+  const { isLoading, isAuthorized } = useAdminGuard();
   const [materials, setMaterials] = useState<any[]>([]);
   const [ambs, setAmbs] = useState<any[]>([]);
   const [ambSel, setAmbSel] = useState<string>("");
-  const [saving, setSaving] = useState<string | null>(null);
+  const [saving, setSaving] = useState<string | number | null>(null);
+  const [searchTerm, setSearchTerm] = useState<string>("");
+  const [onlyActive, setOnlyActive] = useState<string>("all");
 
   useEffect(() => {
     fetch('/api/admin/materials').then(r => r.json()).then(d => {
@@ -30,66 +26,187 @@ export default function AdminMaterials() {
     });
   }, []);
 
+  const filtered = useMemo(() => {
+    return materials.filter((m) => {
+      const matchesSearch = !searchTerm || (m.name || '').toLowerCase().includes(searchTerm.toLowerCase());
+      const matchesActive = onlyActive === 'all' || (onlyActive === 'active' ? m.is_active : !m.is_active);
+      return matchesSearch && matchesActive;
+    });
+  }, [materials, searchTerm, onlyActive]);
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-green-500 mx-auto"></div>
+          <p className="mt-2 text-gray-600">Cargando...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (!isAuthorized) {
+    return null; // El hook maneja la redirección
+  }
+
   return (
     <>
       <Head>
         <title>Admin · Materiales</title>
       </Head>
-      <main className="min-h-screen bg-white px-4 sm:px-6 lg:px-8 py-10">
-        <nav className="text-sm text-gray-600 mb-3 flex gap-2 flex-wrap">
-          <Link href="/admin" className="underline">Admin</Link>
-          <span>/</span>
-          <span className="text-gray-800">Materiales</span>
-        </nav>
-        <div className="flex items-center justify-between">
-          <h1 className="text-2xl font-extrabold">Materiales</h1>
-          <Link href="/admin" className="underline text-sm">Volver al panel</Link>
-        </div>
-        <div className="mt-6 flex items-center gap-3">
-          <label className="text-sm">Ambiteca:</label>
-          <select value={ambSel} onChange={(e)=> setAmbSel(e.target.value)} className="rounded border px-2 py-1 text-sm">
-            <option value="">Global (todas)</option>
-            {ambs.map(a => <option key={a.id} value={a.id}>{a.name}</option>)}
-          </select>
-        </div>
-
-        <div className="mt-8 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {materials.map(m => (
-            <div key={m.id} className="rounded-lg border p-5">
-              <p className="font-semibold">{m.name}</p>
-              <div className="mt-2 flex items-center gap-2">
-                <span className="text-sm text-gray-600">Tarifa:</span>
-                <input
-                  defaultValue={m.ppv_per_kg}
-                  onChange={(e) => setMaterials(prev => prev.map(x => x.id===m.id? { ...x, ppv_per_kg: e.target.value }: x))}
-                  className="w-24 rounded border px-2 py-1 text-sm"
-                />
-                <span className="text-sm">PPV/kg</span>
-              </div>
-              <div className="mt-4 flex gap-2">
-                <button
-                  disabled={saving===m.id}
-                  onClick={async () => {
-                    setSaving(m.id);
-                    try {
-                      const res = await fetch('/api/admin/materials', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ id: m.id, ppv_per_kg: m.ppv_per_kg, ambiteca_id: ambSel || null }) });
-                      const data = await res.json();
-                      if (!res.ok) throw new Error(data?.error || 'Error');
-                      toast.success('Tarifa guardada');
-                    } catch (e: any) {
-                      toast.error(e.message || 'No se pudo guardar');
-                    }
-                    setSaving(null);
-                  }}
-                  className="rounded bg-green-600 text-white px-4 py-2 text-sm disabled:opacity-60"
-                >
-                  {saving===m.id? 'Guardando…' : 'Guardar'}
-                </button>
+      <div className="min-h-screen bg-background">
+        <header className="border-b bg-card">
+          <div className="flex h-16 items-center px-6">
+            <div className="flex items-center space-x-4">
+              <Button variant="ghost" size="sm" onClick={() => router.back()}>
+                <ArrowLeft className="h-4 w-4" />
+              </Button>
+              <Package className="h-6 w-6 text-primary" />
+              <div>
+                <h1 className="text-xl font-bold">Gestión de Materiales</h1>
+                <p className="text-sm text-muted-foreground">{filtered.length} materiales</p>
               </div>
             </div>
-          ))}
-        </div>
-      </main>
+            <div className="ml-auto">
+              <Link href="/admin">
+                <Button variant="outline" size="sm">Dashboard</Button>
+              </Link>
+            </div>
+          </div>
+        </header>
+        <main className="p-6">
+          <div className="flex gap-6">
+            <AdminSidebar />
+            <div className="flex-1">
+              {/* Filtros */}
+              <Card className="mb-6">
+                <CardHeader>
+                  <CardTitle>Filtros</CardTitle>
+                  <CardDescription>Busca y filtra materiales por nombre, estado y ambiteca</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="flex flex-col sm:flex-row gap-4">
+                    <div className="flex-1">
+                      <div className="relative">
+                        <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+                        <input
+                          type="text"
+                          placeholder="Buscar material..."
+                          value={searchTerm}
+                          onChange={(e) => setSearchTerm(e.target.value)}
+                          className="w-full pl-10 pr-4 py-2 border border-input rounded-md bg-background"
+                        />
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <Filter className="h-4 w-4 text-muted-foreground" />
+                      <select value={onlyActive} onChange={(e)=> setOnlyActive(e.target.value)} className="px-3 py-2 border border-input rounded-md bg-background">
+                        <option value="all">Todos</option>
+                        <option value="active">Activos</option>
+                        <option value="inactive">Inactivos</option>
+                      </select>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <span className="text-sm">Ambiteca:</span>
+                      <select value={ambSel} onChange={(e)=> setAmbSel(e.target.value)} className="px-3 py-2 border border-input rounded-md bg-background">
+                        <option value="">Global (todas)</option>
+                        {ambs.map(a => <option key={a.id} value={a.id}>{a.name}</option>)}
+                      </select>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+
+              {/* Tabla */}
+              <div className="overflow-x-auto rounded-md border">
+                <table className="w-full text-sm">
+                  <thead className="bg-muted/50">
+                    <tr>
+                      <th className="text-left p-3 font-medium">Material</th>
+                      <th className="text-left p-3 font-medium">Tarifa (PPV / unidad)</th>
+                      <th className="text-left p-3 font-medium">Estado</th>
+                      <th className="text-left p-3 font-medium">Imagen</th>
+                      <th className="text-right p-3 font-medium">Acciones</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {filtered.map((m) => (
+                      <tr key={m.id} className="border-t">
+                        <td className="p-3">
+                          <div className="font-medium">{m.name}</div>
+                          <div className="text-xs text-muted-foreground">{m.unit || 'kg'} · ID: {m.id}</div>
+                        </td>
+                        <td className="p-3">
+                          <div className="flex items-center gap-2">
+                            <input
+                              defaultValue={m.ppv_per_kg}
+                              onChange={(e) => setMaterials(prev => prev.map(x => x.id===m.id? { ...x, ppv_per_kg: e.target.value }: x))}
+                              className="w-24 rounded border px-2 py-1 text-sm"
+                            />
+                            <button
+                              disabled={saving===m.id}
+                              onClick={async () => {
+                                setSaving(m.id);
+                                try {
+                                  const res = await fetch('/api/admin/materials', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ id: m.id, ppv_per_kg: m.ppv_per_kg, ambiteca_id: ambSel || null }) });
+                                  const data = await res.json();
+                                  if (!res.ok) throw new Error(data?.error || 'Error');
+                                  toast.success('Tarifa guardada');
+                                } catch (e: any) {
+                                  toast.error(e.message || 'No se pudo guardar');
+                                }
+                                setSaving(null);
+                              }}
+                              className="rounded bg-green-600 text-white px-3 py-1 text-xs disabled:opacity-60"
+                            >
+                              {saving===m.id? 'Guardando…' : 'Guardar'}
+                            </button>
+                          </div>
+                        </td>
+                        <td className="p-3">{m.is_active ? 'Activo' : 'Inactivo'}</td>
+                        <td className="p-3">
+                          <div className="flex items-center gap-2">
+                            {m.image_url ? (<img src={m.image_url} alt="img" className="h-10 w-10 object-cover rounded" />) : (
+                              <span className="text-xs text-muted-foreground">Sin imagen</span>
+                            )}
+                            <label className="text-xs underline cursor-pointer">
+                              Subir
+                              <input type="file" accept="image/*" className="hidden" onChange={async (e)=>{ const f=e.target.files?.[0]; if (!f) return; try { const sign = await fetch('/api/admin/materials-sign-upload',{ method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ fileName: f.name })}); const signed = await sign.json(); if (!sign.ok) throw new Error(signed?.error||'No se pudo firmar'); const put = await fetch(signed.uploadUrl, { method:'PUT', headers:{'Content-Type': f.type}, body: f }); if (!put.ok) throw new Error('Fallo al subir'); const res = await fetch('/api/admin/materials', { method:'PATCH', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ id: m.id, image_url: signed.publicUrl }) }); if (!res.ok) throw new Error('Fallo al actualizar'); setMaterials(prev => prev.map(x=>x.id===m.id? { ...x, image_url: signed.publicUrl }: x)); } catch(e:any){ toast.error(e.message || 'No se pudo subir'); }} } />
+                            </label>
+                          </div>
+                        </td>
+                        <td className="p-3 text-right">
+                          <div className="flex justify-end gap-2">
+                            <Link href={`/admin/materials/${m.id}`} className="px-3 py-1 rounded border">Ver</Link>
+                            <button
+                              onClick={async ()=>{
+                                try {
+                                  const res = await fetch('/api/admin/materials', { method:'PATCH', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ id: m.id, is_active: !m.is_active })});
+                                  const data = await res.json();
+                                  if (!res.ok) throw new Error(data?.error || 'Error');
+                                  setMaterials(prev => prev.map(x => x.id===m.id? { ...x, is_active: !m.is_active }: x));
+                                } catch(e:any) {
+                                  toast.error(e.message || 'No se pudo actualizar');
+                                }
+                              }}
+                              className="px-3 py-1 rounded border"
+                            >{m.is_active? 'Desactivar':'Activar'}</button>
+                          </div>
+                        </td>
+                      </tr>
+                    ))}
+                    {filtered.length===0 && (
+                      <tr>
+                        <td colSpan={5} className="p-8 text-center text-muted-foreground">No se encontraron materiales</td>
+                      </tr>
+                    )}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </main>
+      </div>
     </>
   );
 }

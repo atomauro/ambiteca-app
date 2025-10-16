@@ -71,12 +71,6 @@ export default function AdminDashboard() {
             </div>
 
             <div className="flex items-center gap-4">
-              <nav className="hidden sm:flex items-center gap-2">
-                <Link href="/admin" className="px-3 py-1 text-sm rounded-md hover:bg-gray-100 transition-colors">Panel</Link>
-                <Link href="/admin/users" className="px-3 py-1 text-sm rounded-md hover:bg-gray-100 transition-colors">Usuarios</Link>
-                <Link href="/admin/materials" className="px-3 py-1 text-sm rounded-md hover:bg-gray-100 transition-colors">Materiales</Link>
-                <Link href="/admin/ambitecas" className="px-3 py-1 text-sm rounded-md hover:bg-gray-100 transition-colors">Ambitecas</Link>
-              </nav>
               <DropdownMenu>
                 <DropdownMenuTrigger className="rounded-md focus:outline-none focus:ring-2 focus:ring-ring">
                   <div className="flex items-center gap-2">
@@ -122,11 +116,6 @@ export default function AdminDashboard() {
           <div className="flex-1">
         <div className="flex flex-wrap items-center justify-between gap-4">
           <h1 className="text-2xl sm:text-3xl font-extrabold">Panel administrativo</h1>
-          <nav className="flex gap-3 text-sm">
-            <Link href="/admin/users" className="underline">Usuarios</Link>
-            <Link href="/admin/materials" className="underline">Materiales</Link>
-            <Link href="/admin/ambitecas" className="underline">Ambitecas</Link>
-          </nav>
         </div>
 
         <section className="mt-8 grid grid-cols-1 sm:grid-cols-4 gap-6">
