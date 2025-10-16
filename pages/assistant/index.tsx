@@ -3,6 +3,7 @@ import Head from "next/head";
 import Link from "next/link";
 import { useRouter } from "next/router";
 import { Recycle } from "lucide-react";
+import UserMenu from "@/components/UserMenu";
 import { useEffect, useState } from "react";
 import { Skeleton } from "@/components/ui/skeleton";
 
@@ -11,6 +12,7 @@ export default function AssistantLanding() {
   const [ambs, setAmbs] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [ambSel, setAmbSel] = useState<string>("");
+  const [redirecting, setRedirecting] = useState(false);
   useEffect(() => {
     const load = async () => {
       setLoading(true);
@@ -22,7 +24,7 @@ export default function AssistantLanding() {
     };
     load();
   }, []);
-  const handleEnter = () => router.push({ pathname: "/assistant/home", query: { ambiteca_id: ambSel } });
+  const handleEnter = () => { setRedirecting(true); router.push({ pathname: "/assistant/home", query: { ambiteca_id: ambSel } }); };
 
   return (
     <>
@@ -61,18 +63,7 @@ export default function AssistantLanding() {
               </a>
             </nav>
 
-            <div className="flex items-center gap-2">
-              <Link href="/assistant">
-                <button className="px-3 py-1 text-sm rounded-md bg-primary text-primary-foreground hover:bg-primary/90 transition-colors">
-                  Asistente
-                </button>
-              </Link>
-              <Link href="/">
-                <button className="px-3 py-1 text-sm rounded-md hover:bg-gray-100 transition-colors">
-                  Volver
-                </button>
-              </Link>
-            </div>
+            <div className="flex items-center gap-2"><UserMenu /></div>
           </div>
         </header>
 
@@ -105,6 +96,14 @@ export default function AssistantLanding() {
         </section>
         </main>
       </div>
+      {redirecting && (
+        <div className="fixed inset-0 z-50 bg-black/40 grid place-items-center">
+          <div className="bg-white rounded-md shadow px-6 py-5 flex items-center gap-3">
+            <div className="w-5 h-5 border-2 border-gray-300 border-t-green-600 rounded-full animate-spin" />
+            <span className="text-sm">Entrando…</span>
+          </div>
+        </div>
+      )}
     </>
   );
 }

@@ -7,6 +7,7 @@ import toast from "react-hot-toast";
 import { usePrivy } from "@privy-io/react-auth";
 import { AdminSidebar } from "@/components/admin/AdminSidebar";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import UserMenu from "@/components/UserMenu";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
   DropdownMenu,
@@ -27,6 +28,9 @@ export default function AdminDashboard() {
   const [metrics, setMetrics] = useState<any>({users:0,ambitecas:0,deliveries:0,ppv:0,materialsWithRate:0,rewardsActive:0,rewardsOutOfStock:0,topMaterials:[]});
   const [metricsLoading, setMetricsLoading] = useState(true);
   const { user, logout } = usePrivy();
+  const avatarUrl = (user as any)?.google?.profilePictureUrl || (user as any)?.apple?.profilePictureUrl || "/images/avatar.png";
+  const displayName = (user as any)?.google?.name || (user as any)?.apple?.name || ((user as any)?.email?.address ? (user as any)?.email?.address.split('@')[0] : 'Usuario');
+  const emailAddr = (user as any)?.email?.address || '';
 
   const [ambSel, setAmbSel] = useState<string>("");
   const refreshAll = async () => {
@@ -96,43 +100,7 @@ export default function AdminDashboard() {
               <span className="text-xl font-bold text-foreground">AMBITECAPP</span>
             </div>
 
-            <div className="flex items-center gap-4">
-              <DropdownMenu>
-                <DropdownMenuTrigger className="rounded-md focus:outline-none focus:ring-2 focus:ring-ring">
-                  <div className="flex items-center gap-2">
-                    <Avatar className="size-8">
-                      <AvatarImage src={(user as any)?.google?.profilePictureUrl || (user as any)?.apple?.profilePictureUrl || "/images/avatar.png"} alt={(user as any)?.google?.name || "Usuario"} />
-                      <AvatarFallback>{(((user as any)?.google?.name || 'U') as string).slice(0,2).toUpperCase()}</AvatarFallback>
-                    </Avatar>
-                    <div className="hidden md:flex flex-col items-start leading-tight">
-                      <span className="text-sm font-medium max-w-[160px] truncate">{(user as any)?.google?.name || 'Usuario'}</span>
-                      <span className="text-xs text-muted-foreground max-w-[180px] truncate">{(user as any)?.email?.address || ''}</span>
-                    </div>
-                  </div>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="end" className="w-56">
-                  <DropdownMenuLabel>
-                    <div className="flex items-center gap-3">
-                      <Avatar className="size-8">
-                        <AvatarImage src={(user as any)?.google?.profilePictureUrl || (user as any)?.apple?.profilePictureUrl || "/images/avatar.png"} alt={(user as any)?.google?.name || "Usuario"} />
-                        <AvatarFallback>{(((user as any)?.google?.name || 'U') as string).slice(0,2).toUpperCase()}</AvatarFallback>
-                      </Avatar>
-                      <div>
-                        <div className="text-sm font-medium leading-none">{(user as any)?.google?.name || 'Usuario'}</div>
-                        <div className="text-xs text-muted-foreground truncate max-w-[160px]">{(user as any)?.email?.address || ''}</div>
-                      </div>
-                    </div>
-                  </DropdownMenuLabel>
-                  <DropdownMenuSeparator />
-                  <Link href="/admin"><DropdownMenuItem className="cursor-pointer">Panel</DropdownMenuItem></Link>
-                  <Link href="/admin/users"><DropdownMenuItem className="cursor-pointer">Usuarios</DropdownMenuItem></Link>
-                  <Link href="/admin/materials"><DropdownMenuItem className="cursor-pointer">Materiales</DropdownMenuItem></Link>
-                  <Link href="/admin/ambitecas"><DropdownMenuItem className="cursor-pointer">Ambitecas</DropdownMenuItem></Link>
-                  <DropdownMenuSeparator />
-                  <DropdownMenuItem className="cursor-pointer" onClick={async () => { try { localStorage.removeItem('lastRole'); await logout(); window.location.href = '/'; } catch(e) { console.error(e);} }}>Cerrar sesión</DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
-            </div>
+            <div className="flex items-center gap-4"><UserMenu /></div>
           </div>
         </header>
 

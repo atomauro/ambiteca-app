@@ -378,7 +378,14 @@ export default function ProfilePage() {
                 <div className="mt-4 grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
                   <div>
                     <div className="text-muted-foreground">Rol</div>
-                    <div className="font-medium">{getRoleLabel(userProfile?.role)}</div>
+                    <div className="mt-1">
+                      {(() => {
+                        const role = (userProfile?.role || '').toLowerCase();
+                        const label = role === 'admin' ? 'Administrador' : role === 'assistant' ? 'Asistente' : 'Ciudadano';
+                        const color = role === 'admin' ? 'bg-red-100 text-red-800' : role === 'assistant' ? 'bg-blue-100 text-blue-800' : 'bg-green-100 text-green-800';
+                        return <span className={`inline-flex items-center rounded-full px-3 py-1 text-xs font-semibold ${color}`}>{label}</span>;
+                      })()}
+                    </div>
                   </div>
                   <div>
                     <div className="text-muted-foreground">Wallet principal</div>

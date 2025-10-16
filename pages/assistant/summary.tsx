@@ -48,6 +48,15 @@ export default function SummaryPage() {
   };
 
   const done = async () => {
+    const showLoader = () => {
+      const el = document.createElement('div');
+      el.id = 'global-loader';
+      el.className = 'fixed inset-0 z-[100] bg-black/40 grid place-items-center';
+      el.innerHTML = '<div class="bg-white rounded-md shadow px-6 py-5 flex items-center gap-3"><div class="w-5 h-5 border-2 border-gray-300 border-t-green-600 rounded-full animate-spin"></div><span class="text-sm">Procesando…</span></div>';
+      document.body.appendChild(el);
+      return () => { try { document.getElementById('global-loader')?.remove(); } catch {} };
+    };
+    const hide = showLoader();
     let ppv = awardedPpv;
     let currentDeliveryId = deliveryId;
     
@@ -81,6 +90,7 @@ export default function SummaryPage() {
         txHash: txHash || ''
       } 
     });
+    hide();
   };
 
   return (

@@ -7,14 +7,19 @@ import { useRouter } from "next/router";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { supabase } from "@/lib/supabase/client";
 import { Skeleton } from "@/components/ui/skeleton";
+import UserMenu from "@/components/UserMenu";
 
 export default function AssistantHome() {
   const router = useRouter();
-  const { ready, authenticated } = usePrivy();
+  const { ready, authenticated, user, logout } = usePrivy();
   const [loading, setLoading] = useState(true);
   const [recentDeliveries, setRecentDeliveries] = useState<any[]>([]);
   const [todayCount, setTodayCount] = useState<number>(0);
   const [monthCount, setMonthCount] = useState<number>(0);
+
+  const avatarUrl = (user as any)?.google?.profilePictureUrl || (user as any)?.apple?.profilePictureUrl || "/images/avatar.png";
+  const displayName = (user as any)?.google?.name || (user as any)?.apple?.name || ((user as any)?.email?.address ? (user as any)?.email?.address.split('@')[0] : 'Usuario');
+  const emailAddr = (user as any)?.email?.address || '';
 
   useEffect(() => {
     if (!ready) return;
@@ -93,9 +98,7 @@ export default function AssistantHome() {
               </a>
             </nav> */}
 
-            <div className="flex items-center gap-2">
-              <Link href="/dashboard" className="px-3 py-1 text-sm rounded-md hover:bg-gray-100 transition-colors">Volver</Link>
-            </div>
+            <div className="flex items-center gap-4"><UserMenu /></div>
           </div>
         </header>
 
@@ -156,7 +159,6 @@ export default function AssistantHome() {
                   <CardTitle className="text-base">Entregas recientes</CardTitle>
                   <CardDescription>Últimas 8 entregas atendidas</CardDescription>
                 </div>
-                <Clock className="size-4 text-muted-foreground" />
               </CardHeader>
               <CardContent>
                 {loading ? (

@@ -1,6 +1,6 @@
 import Image from "next/image";
 import Link from "next/link";
-import PerlaVerdeBalance from "./PerlaVerdeBalance";
+import UserMenu from "./UserMenu";
 
 interface AssistantHeaderProps {
   showBackButton?: boolean;
@@ -20,9 +20,7 @@ export default function AssistantHeader({
           <Image src="/images/logoambiteca.png" alt="Ambitecapp" width={36} height={36} />
           <span className="font-semibold tracking-wide">AMBITECAPP</span>
         </div>
-        
-        {/* Balance de PPV integrado con Privy */}
-        <PerlaVerdeBalance />
+        <UserMenu />
       </header>
 
       {showBackButton && (

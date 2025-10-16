@@ -13,6 +13,7 @@ export default function WeightPage() {
   const [weight, setWeight] = useState("0,00");
   const [draftId, setDraftId] = useState<string | null>(null);
   const [ppvRate, setPpvRate] = useState<number>(0);
+  const [redirecting, setRedirecting] = useState(false);
 
   useEffect(() => {
     if (!materialId) return;
@@ -40,6 +41,7 @@ export default function WeightPage() {
 
   const saveDraft = async () => {
     try {
+      setRedirecting(true);
       const res = await fetch("/api/deliveries/draft", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -60,6 +62,7 @@ export default function WeightPage() {
       router.push({ pathname: "/assistant/summary", query: { ...router.query, weight, draftId: id } });
     } catch (e: any) {
       toast.error(e.message || "No se pudo guardar el borrador");
+      setRedirecting(false);
     }
   };
 
@@ -109,6 +112,14 @@ export default function WeightPage() {
           </div>
         </section>
       </main>
+      {redirecting && (
+        <div className="fixed inset-0 z-50 bg-black/40 grid place-items-center">
+          <div className="bg-white rounded-md shadow px-6 py-5 flex items-center gap-3">
+            <div className="w-5 h-5 border-2 border-gray-300 border-t-green-600 rounded-full animate-spin" />
+            <span className="text-sm">Guardando…</span>
+          </div>
+        </div>
+      )}
     </>
   );
 }

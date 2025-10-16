@@ -5,6 +5,7 @@ import { usePrivy } from "@privy-io/react-auth";
 import Head from "next/head";
 import Link from "next/link";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import UserMenu from "@/components/UserMenu";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -29,26 +30,31 @@ export default function DashboardPage() {
   const [loadingCitizenData, setLoadingCitizenData] = useState(false);
   const [deliveries, setDeliveries] = useState<any[]>([]);
   const [rewards, setRewards] = useState<any[]>([]);
+  const [redirecting, setRedirecting] = useState(true);
 
   // Redirección por rol al ingresar al dashboard
   useEffect(() => {
     if (!ready) return;
+    // Siempre mostrar loader hasta decidir navegación
+    setRedirecting(true);
     if (!authenticated) {
-      // Intento de redirección temprana usando rol cacheado
       try {
         const lastRole = localStorage.getItem('lastRole')?.toLowerCase();
         if (lastRole === 'admin') { router.replace('/admin'); return; }
         if (lastRole === 'assistant') { router.replace('/assistant/home'); return; }
       } catch {}
+      router.replace('/');
       return;
     }
+
+    // Si aún no tenemos rol (perfil cargando), seguimos mostrando loader
+    if (!userProfile?.role) return;
+
     const roleLower = (userProfile?.role || '').toLowerCase();
-    if (!roleLower) return;
-    if (roleLower === 'assistant' || roleLower === 'asistente') {
-      router.replace('/assistant/home');
-    } else if (roleLower === 'admin') {
-      router.replace('/admin');
-    }
+    if (roleLower === 'assistant' || roleLower === 'asistente') { router.replace('/assistant/home'); return; }
+    if (roleLower === 'admin') { router.replace('/admin'); return; }
+    // Ciudadano: detener loader y mostrar UI de citizen
+    setRedirecting(false);
   }, [ready, authenticated, userProfile?.role, router]);
 
   // Cargar datos de ciudadano: historial y catálogo
@@ -100,6 +106,22 @@ export default function DashboardPage() {
     }
   }, [ready, authenticated, router]);
 
+  if (redirecting) {
+    return (
+      <>
+        <Head>
+          <title>AMBITECA APP</title>
+        </Head>
+        <div className="fixed inset-0 z-[100] bg-black/40 grid place-items-center">
+          <div className="bg-white rounded-md shadow px-6 py-5 flex items-center gap-3">
+            <div className="w-5 h-5 border-2 border-gray-300 border-t-green-600 rounded-full animate-spin" />
+            <span className="text-sm">Redirigiendo…</span>
+          </div>
+        </div>
+      </>
+    );
+  }
+
   return (
     <>
       <Head>
@@ -139,58 +161,7 @@ export default function DashboardPage() {
                   </a> 
                 </nav>*/}
 
-                <div className="flex items-center gap-4">
-                 {/*  <nav className="hidden sm:flex items-center gap-2">
-                    <Link href="/assistant" className="px-3 py-1 text-sm rounded-md hover:bg-gray-100 transition-colors">
-                      Asistente
-                    </Link>
-                    <Link href="/admin" className="px-3 py-1 text-sm rounded-md hover:bg-gray-100 transition-colors">
-                      Admin
-                    </Link>
-                  </nav> */}
-                  <DropdownMenu>
-                    <DropdownMenuTrigger className="rounded-md focus:outline-none focus:ring-2 focus:ring-ring">
-                      <div className="flex items-center gap-2">
-                        <Avatar className="size-8">
-                          <AvatarImage src={(user as any)?.google?.profilePictureUrl || (user as any)?.apple?.profilePictureUrl || "/images/avatar.png"} alt={userProfile?.full_name || "Usuario"} />
-                          <AvatarFallback>{(userProfile?.full_name || "U").slice(0, 2).toUpperCase()}</AvatarFallback>
-                        </Avatar>
-                        <div className="hidden md:flex flex-col items-start leading-tight">
-                          <span className="text-sm font-medium max-w-[160px] truncate">{userProfile?.full_name || (user as any)?.google?.name || 'Usuario'}</span>
-                          <span className="text-xs text-muted-foreground max-w-[180px] truncate">{userProfile?.email || (user as any)?.email?.address || ''}</span>
-                        </div>
-                      </div>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end" className="w-56">
-                      <DropdownMenuLabel>
-              <div className="flex items-center gap-3">
-                          <Avatar className="size-8">
-                            <AvatarImage src={(user as any)?.google?.profilePictureUrl || (user as any)?.apple?.profilePictureUrl || "/images/avatar.png"} alt={userProfile?.full_name || "Usuario"} />
-                            <AvatarFallback>{(userProfile?.full_name || "U").slice(0, 2).toUpperCase()}</AvatarFallback>
-                          </Avatar>
-                          <div>
-                            <div className="text-sm font-medium leading-none">{userProfile?.full_name || user?.google?.name || "Usuario"}</div>
-                            <div className="text-xs text-muted-foreground truncate max-w-[160px]">{userProfile?.email || user?.email?.address || ""}</div>
-                          </div>
-                        </div>
-                      </DropdownMenuLabel>
-                      <DropdownMenuSeparator />
-                      <Link href="/profile">
-                        <DropdownMenuItem className="cursor-pointer">Perfil</DropdownMenuItem>
-                      </Link>
-                      <Link href="/dashboard"><DropdownMenuItem className="cursor-pointer">Dashboard</DropdownMenuItem></Link>
-
-                      {/* <Link href="/assistant">
-                        <DropdownMenuItem className="cursor-pointer">Asistente</DropdownMenuItem>
-                      </Link>
-                      <Link href="/admin">
-                        <DropdownMenuItem className="cursor-pointer">Admin</DropdownMenuItem>
-                      </Link> */}
-                      <DropdownMenuSeparator />
-                      <DropdownMenuItem className="cursor-pointer" onClick={async () => { try { localStorage.removeItem('lastRole'); await logout(); window.location.href = '/'; } catch(e) { console.error(e);} }}>Cerrar sesión</DropdownMenuItem>
-                    </DropdownMenuContent>
-                  </DropdownMenu>
-                </div>
+                <div className="flex items-center gap-4"><UserMenu /></div>
             </div>
             </header>
 
