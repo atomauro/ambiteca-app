@@ -72,6 +72,22 @@ export default withAdminAuth(async function handler(req: NextApiRequest, res: Ne
     return res.status(200).json({ ok: true });
   }
 
+  if (req.method === 'PUT') {
+    const { name, unit = 'kg', is_active = true } = req.body || {};
+    if (!name) return res.status(400).json({ error: 'Falta nombre' });
+    const { data, error } = await supabaseAdmin.from('materials').insert({ name, unit, is_active }).select('id').single();
+    if (error) return res.status(500).json({ error: error.message });
+    return res.status(200).json({ id: data?.id });
+  }
+
+  if (req.method === 'DELETE') {
+    const { id } = req.body || {};
+    if (!id) return res.status(400).json({ error: 'Falta id' });
+    const { error } = await supabaseAdmin.from('materials').delete().eq('id', id);
+    if (error) return res.status(500).json({ error: error.message });
+    return res.status(200).json({ ok: true });
+  }
+
   if (req.method === 'PATCH') {
     const { id, is_active, image_url } = req.body || {};
     if (!id) return res.status(400).json({ error: 'Parámetros inválidos' });

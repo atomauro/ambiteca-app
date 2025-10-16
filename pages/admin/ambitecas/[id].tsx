@@ -5,25 +5,38 @@ import { useEffect, useState } from "react";
 import { AdminSidebar } from "@/components/admin/AdminSidebar";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft, Building2 } from "lucide-react";
+import { useAdminGuard } from "@/lib/hooks/useAdminGuard";
 
 export const getServerSideProps = async () => ({ props: {} });
 
 export default function AdminAmbitecaDetail() {
   const router = useRouter();
   const { id } = router.query;
+  const ambId = Array.isArray(id) ? id[0] : (id ? String(id) : '');
   const [amb, setAmb] = useState<any | null>(null);
   const [uploading, setUploading] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const { isLoading, isAuthorized } = useAdminGuard();
 
   useEffect(() => {
-    if (!id) return;
+    if (!ambId) return;
     (async () => {
-      const res = await fetch(`/api/admin/ambitecas?id=${id}`);
-      const d = await res.json();
-      if (res.ok) setAmb(d.ambiteca);
+      setLoading(true);
+      setError(null);
+      try {
+        const res = await fetch(`/api/admin/ambitecas?id=${encodeURIComponent(ambId)}`);
+        const d = await res.json();
+        if (!res.ok) throw new Error(d?.error || 'No se pudo cargar');
+        setAmb(d.ambiteca);
+      } catch(e:any) {
+        setError(e.message || 'Error desconocido');
+      }
+      setLoading(false);
     })();
-  }, [id]);
+  }, [ambId]);
 
-  if (!amb) return (
+  if (isLoading || loading) return (
     <main className="min-h-screen bg-background p-6">
       <div className="flex gap-6">
         <AdminSidebar />
@@ -32,10 +45,36 @@ export default function AdminAmbitecaDetail() {
     </main>
   );
 
+  if (!isAuthorized) return null;
+
+  if (!amb) {
+    return (
+      <main className="min-h-screen bg-background p-6">
+        <div className="flex gap-6">
+          <AdminSidebar />
+          <div className="flex-1">
+            <div className="rounded-lg border p-6">
+              <p className="text-sm text-red-600">No se encontró la ambiteca.</p>
+            </div>
+          </div>
+        </div>
+      </main>
+    );
+  }
+
+  const patch = async (fields: Record<string, any>) => {
+    if (!ambId) return;
+    try {
+      const res = await fetch('/api/admin/ambitecas', { method:'PATCH', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ id: ambId, ...fields }) });
+      if (!res.ok) throw new Error('No se pudo guardar');
+      setAmb((prev:any) => ({ ...prev, ...fields }));
+    } catch(e) { /* noop simple */ }
+  };
+
   return (
     <>
       <Head>
-        <title>Admin · {amb.name}</title>
+        <title>Admin · {amb?.name || 'Ambiteca'}</title>
       </Head>
       <main className="min-h-screen bg-background">
         <header className="border-b bg-card">
@@ -61,18 +100,25 @@ export default function AdminAmbitecaDetail() {
           <div className="flex gap-6">
             <AdminSidebar />
             <div className="flex-1">
+              {error ? (
+                <div className="mb-4 text-sm text-red-600">{error}</div>
+              ) : null}
               <section className="grid grid-cols-1 sm:grid-cols-3 gap-6">
                 <div className="rounded-lg border p-5">
                   <p className="text-sm text-gray-600">Dirección</p>
-                  <p className="font-semibold">{amb.address || '—'}</p>
+                  <input defaultValue={amb.address || ''} onBlur={(e)=>patch({ address: e.target.value })} className="mt-1 w-full px-3 py-2 border rounded-md bg-background" />
                 </div>
                 <div className="rounded-lg border p-5">
                   <p className="text-sm text-gray-600">Contacto</p>
-                  <p className="font-semibold">{amb.contact_name || '—'} {amb.phone ? `· ${amb.phone}` : ''}</p>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 mt-1">
+                    <input defaultValue={amb.contact_name || ''} placeholder="Nombre" onBlur={(e)=>patch({ contact_name: e.target.value })} className="px-3 py-2 border rounded-md bg-background" />
+                    <input defaultValue={amb.phone || ''} placeholder="Teléfono" onBlur={(e)=>patch({ phone: e.target.value })} className="px-3 py-2 border rounded-md bg-background" />
+                    <input defaultValue={amb.email || ''} placeholder="Email" onBlur={(e)=>patch({ email: e.target.value })} className="px-3 py-2 border rounded-md bg-background sm:col-span-2" />
+                  </div>
                 </div>
                 <div className="rounded-lg border p-5">
                   <p className="text-sm text-gray-600">Horario</p>
-                  <p className="font-semibold">{amb.opening_hours || '—'}</p>
+                  <input defaultValue={amb.opening_hours || ''} onBlur={(e)=>patch({ opening_hours: e.target.value })} className="mt-1 w-full px-3 py-2 border rounded-md bg-background" />
                 </div>
               </section>
 
@@ -83,9 +129,13 @@ export default function AdminAmbitecaDetail() {
                     {amb.image_url ? (<img src={amb.image_url} alt="img" className="h-16 w-16 object-cover rounded" />) : (<div className="h-16 w-16 grid place-items-center text-xs text-muted-foreground border rounded">Sin imagen</div>)}
                     <label className="text-xs underline cursor-pointer">
                       Subir
-                      <input type="file" accept="image/*" className="hidden" onChange={async (e)=>{ const f=e.target.files?.[0]; if (!f) return; try { setUploading(true); const sign = await fetch('/api/admin/ambitecas-sign-upload',{ method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ fileName: f.name })}); const signed = await sign.json(); if (!sign.ok) throw new Error(signed?.error||'No se pudo firmar'); const put = await fetch(signed.uploadUrl, { method:'PUT', headers:{'Content-Type': f.type}, body: f }); if (!put.ok) throw new Error('Fallo al subir'); const res = await fetch('/api/admin/ambitecas', { method:'PATCH', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ id, image_url: signed.publicUrl }) }); if (!res.ok) throw new Error('Fallo al actualizar'); setAmb((prev:any)=> ({ ...prev, image_url: signed.publicUrl })); } finally { setUploading(false);} }} />
+                      <input type="file" accept="image/*" className="hidden" onChange={async (e)=>{ const f=e.target.files?.[0]; if (!f) return; try { setUploading(true); const sign = await fetch('/api/admin/ambitecas-sign-upload',{ method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ fileName: f.name })}); const signed = await sign.json(); if (!sign.ok) throw new Error(signed?.error||'No se pudo firmar'); const put = await fetch(signed.uploadUrl, { method:'PUT', headers:{'Content-Type': f.type}, body: f }); if (!put.ok) throw new Error('Fallo al subir'); const res = await fetch('/api/admin/ambitecas', { method:'PATCH', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ id: ambId, image_url: signed.publicUrl }) }); if (!res.ok) throw new Error('Fallo al actualizar'); setAmb((prev:any)=> ({ ...prev, image_url: signed.publicUrl })); } finally { setUploading(false);} }} />
                     </label>
                   </div>
+                </div>
+                <div className="rounded-lg border p-5 sm:col-span-2">
+                  <p className="text-sm text-gray-600 mb-2">Notas</p>
+                  <textarea defaultValue={amb.notes || ''} onBlur={(e)=>patch({ notes: e.target.value })} className="w-full px-3 py-2 border rounded-md bg-background" rows={3} />
                 </div>
               </section>
             </div>

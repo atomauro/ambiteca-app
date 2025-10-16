@@ -34,6 +34,24 @@ export default withAdminAuth(async function handler(req: NextApiRequest, res: Ne
     if (error) return res.status(500).json({ error: error.message });
     return res.status(200).json({ ok: true });
   }
+  if (req.method === 'PUT') {
+    const { name, address, city, state, contact_name, phone, email, opening_hours, notes } = req.body || {};
+    if (!name) return res.status(400).json({ error: 'Falta nombre' });
+    const { data, error } = await supabaseAdmin
+      .from('ambitecas')
+      .insert({ name, address: address || null, city: city || null, state: state || null, contact_name: contact_name || null, phone: phone || null, email: email || null, opening_hours: opening_hours || null, notes: notes || null })
+      .select('id')
+      .single();
+    if (error) return res.status(500).json({ error: error.message });
+    return res.status(200).json({ id: data?.id });
+  }
+  if (req.method === 'DELETE') {
+    const { id } = req.body || {};
+    if (!id) return res.status(400).json({ error: 'Falta id' });
+    const { error } = await supabaseAdmin.from('ambitecas').delete().eq('id', id);
+    if (error) return res.status(500).json({ error: error.message });
+    return res.status(200).json({ ok: true });
+  }
   if (req.method === 'PATCH') {
     const { id, ...fields } = req.body || {};
     if (!id) return res.status(400).json({ error: 'Falta id' });

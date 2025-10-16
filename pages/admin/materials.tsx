@@ -18,6 +18,8 @@ export default function AdminMaterials() {
   const [saving, setSaving] = useState<string | number | null>(null);
   const [searchTerm, setSearchTerm] = useState<string>("");
   const [onlyActive, setOnlyActive] = useState<string>("all");
+  const [showCreate, setShowCreate] = useState(false);
+  const [newMat, setNewMat] = useState({ name: '', unit: 'kg' });
 
   useEffect(() => {
     const url = new URL('/api/admin/materials', window.location.origin);
@@ -115,6 +117,9 @@ export default function AdminMaterials() {
                         {ambs.map(a => <option key={a.id} value={a.id}>{a.name}</option>)}
                       </select>
                     </div>
+                    <div className="ml-auto">
+                      <Button size="sm" onClick={()=>setShowCreate(true)}>Nuevo material</Button>
+                    </div>
                   </div>
                 </CardContent>
               </Card>
@@ -180,6 +185,7 @@ export default function AdminMaterials() {
                         <td className="p-3 text-right">
                           <div className="flex justify-end gap-2">
                             <Link href={`/admin/materials/${m.id}`} className="px-3 py-1 rounded border">Ver</Link>
+                            <button onClick={async ()=>{ if(!confirm('¿Eliminar material?')) return; const res = await fetch('/api/admin/materials', { method:'DELETE', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ id: m.id }) }); if(res.ok) setMaterials(prev=>prev.filter(x=>x.id!==m.id)); }} className="px-3 py-1 rounded border text-red-600">Eliminar</button>
                             <button
                               onClick={async ()=>{
                                 try {
@@ -205,6 +211,31 @@ export default function AdminMaterials() {
                   </tbody>
                 </table>
               </div>
+              {showCreate && (
+                <div className="fixed inset-0 bg-black/30 grid place-items-center">
+                  <div className="bg-card rounded-md border w-full max-w-md p-4">
+                    <h3 className="text-lg font-semibold mb-3">Nuevo material</h3>
+                    <div className="space-y-3">
+                      <div>
+                        <label className="text-xs text-muted-foreground">Nombre</label>
+                        <input value={newMat.name} onChange={(e)=>setNewMat(s=>({ ...s, name: e.target.value }))} className="w-full px-3 py-2 border rounded-md bg-background" />
+                      </div>
+                      <div>
+                        <label className="text-xs text-muted-foreground">Unidad</label>
+                        <select value={newMat.unit} onChange={(e)=>setNewMat(s=>({ ...s, unit: e.target.value }))} className="w-full px-3 py-2 border rounded-md bg-background">
+                          <option value="kg">kg</option>
+                          <option value="unidad">unidad</option>
+                          <option value="litro">litro</option>
+                        </select>
+                      </div>
+                    </div>
+                    <div className="mt-4 flex justify-end gap-2">
+                      <Button variant="outline" size="sm" onClick={()=>setShowCreate(false)}>Cancelar</Button>
+                      <Button size="sm" onClick={async ()=>{ if(!newMat.name.trim()) return; const res = await fetch('/api/admin/materials', { method:'PUT', headers:{'Content-Type':'application/json'}, body: JSON.stringify(newMat) }); const d = await res.json(); if(res.ok){ setShowCreate(false); setMaterials(prev=> [{ id: d.id, name: newMat.name, unit: newMat.unit, is_active: true, ppv_per_kg: 1 }, ...prev]); setNewMat({ name:'', unit:'kg' }); } }}>Crear</Button>
+                    </div>
+                  </div>
+                </div>
+              )}
             </div>
           </div>
         </main>

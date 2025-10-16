@@ -20,6 +20,8 @@ export default function AdminAmbitecas() {
   const [search, setSearch] = useState("");
   const [creating, setCreating] = useState(false);
   const [name, setName] = useState("");
+  const [showCreate, setShowCreate] = useState(false);
+  const [form, setForm] = useState({ name:'', address:'', city:'San Luis', state:'Antioquia' });
 
   useEffect(() => {
     const load = async () => {
@@ -42,13 +44,14 @@ export default function AdminAmbitecas() {
   };
 
   const createAmbiteca = async () => {
-    if (!name.trim()) return;
+    if (!form.name.trim()) return;
     setCreating(true);
-    const res = await fetch('/api/admin/ambitecas', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ name }) });
+    const res = await fetch('/api/admin/ambitecas', { method:'PUT', headers:{'Content-Type':'application/json'}, body: JSON.stringify(form) });
     const d = await res.json();
     if (res.ok) {
-      setName("");
-      setAmbs(prev => [{ id: d.id, name, is_active: true }, ...prev]);
+      setShowCreate(false);
+      setForm({ name:'', address:'', city:'San Luis', state:'Antioquia' });
+      setAmbs(prev => [{ id: d.id, name: form.name, is_active: true, address: form.address, city: form.city }, ...prev]);
     }
     setCreating(false);
   };
@@ -95,9 +98,8 @@ export default function AdminAmbitecas() {
                         <input value={search} onChange={e=>setSearch(e.target.value)} placeholder="Buscar ambiteca..." className="w-full pl-10 pr-4 py-2 border border-input rounded-md bg-background" />
                       </div>
                     </div>
-                    <div className="flex items-end">
-                      <input value={name} onChange={e=>setName(e.target.value)} placeholder="Nueva ambiteca" className="w-56 px-3 py-2 border rounded-md bg-background" />
-                      <Button className="ml-2" size="sm" disabled={creating} onClick={createAmbiteca}>{creating? 'Creando…' : 'Crear'}</Button>
+                    <div className="ml-auto">
+                      <Button size="sm" onClick={()=>setShowCreate(true)}>Nueva ambiteca</Button>
                     </div>
                   </div>
                 </CardContent>
@@ -127,6 +129,7 @@ export default function AdminAmbitecas() {
                           <td className="p-3 text-right">
                             <div className="flex justify-end gap-2">
                               <Link href={`/admin/ambitecas/${a.id}`} className="px-3 py-1 rounded border">Ver</Link>
+                              <button onClick={async ()=>{ if(!confirm('¿Eliminar ambiteca?')) return; const res = await fetch('/api/admin/ambitecas', { method:'DELETE', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ id: a.id }) }); if(res.ok) setAmbs(prev=>prev.filter(x=>x.id!==a.id)); }} className="px-3 py-1 rounded border text-red-600">Eliminar</button>
                               <button onClick={()=>toggleActive(a.id, a.is_active)} className="px-3 py-1 rounded border">{a.is_active? 'Desactivar':'Activar'}</button>
                             </div>
                           </td>
@@ -143,6 +146,37 @@ export default function AdminAmbitecas() {
           </div>
         </main>
       </div>
+      {showCreate && (
+        <div className="fixed inset-0 bg-black/30 grid place-items-center">
+          <div className="bg-card rounded-md border w-full max-w-md p-4">
+            <h3 className="text-lg font-semibold mb-3">Nueva ambiteca</h3>
+            <div className="space-y-3">
+              <div>
+                <label className="text-xs text-muted-foreground">Nombre</label>
+                <input value={form.name} onChange={e=>setForm(s=>({ ...s, name: e.target.value }))} className="w-full px-3 py-2 border rounded-md bg-background" />
+              </div>
+              <div>
+                <label className="text-xs text-muted-foreground">Dirección</label>
+                <input value={form.address} onChange={e=>setForm(s=>({ ...s, address: e.target.value }))} className="w-full px-3 py-2 border rounded-md bg-background" />
+              </div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div>
+                  <label className="text-xs text-muted-foreground">Ciudad</label>
+                  <input value={form.city} onChange={e=>setForm(s=>({ ...s, city: e.target.value }))} className="w-full px-3 py-2 border rounded-md bg-background" />
+                </div>
+                <div>
+                  <label className="text-xs text-muted-foreground">Estado/Departamento</label>
+                  <input value={form.state} onChange={e=>setForm(s=>({ ...s, state: e.target.value }))} className="w-full px-3 py-2 border rounded-md bg-background" />
+                </div>
+              </div>
+            </div>
+            <div className="mt-4 flex justify-end gap-2">
+              <Button variant="outline" size="sm" onClick={()=>setShowCreate(false)}>Cancelar</Button>
+              <Button size="sm" disabled={creating} onClick={createAmbiteca}>{creating? 'Creando…':'Crear'}</Button>
+            </div>
+          </div>
+        </div>
+      )}
     </>
   );
 }
