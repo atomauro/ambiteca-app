@@ -98,10 +98,10 @@ export default function SummaryPage() {
       <Head>
         <title>Registro listo</title>
       </Head>
-      <main className="min-h-screen bg-white px-6 sm:px-12 py-12">
-        <AssistantHeader />
+      <main className="min-h-screen bg-background">
+        <AssistantHeader showBackButton={false} />
 
-        <section className="max-w-5xl mx-auto mt-14 text-center">
+        <section className="px-4 sm:px-6 lg:px-8 py-10 max-w-5xl mx-auto text-center">
           {deliveryId ? (
             <div className="mb-6 text-left bg-green-50 border border-green-200 text-green-800 rounded-md px-4 py-3">
               <div className="flex flex-wrap items-center justify-between gap-3">

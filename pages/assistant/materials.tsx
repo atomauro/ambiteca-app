@@ -1,9 +1,9 @@
 import Head from "next/head";
-import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/router";
 import { useEffect, useState } from "react";
 import { Skeleton } from "@/components/ui/skeleton";
+import AssistantHeader from "@/components/AssistantHeader";
 
 interface MaterialItem {
   id: string;
@@ -43,25 +43,12 @@ export default function MaterialsPage() {
       <Head>
         <title>Selecciona material</title>
       </Head>
-      <main className="min-h-screen bg-white px-6 sm:px-12 py-12">
-        <header className="flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <Image src="/images/logoambiteca.png" alt="Ambitecapp" width={36} height={36} />
-            <span className="font-semibold tracking-wide">AMBITECAPP</span>
-          </div>
-          <div className="flex items-center gap-3">
-            <span className="text-sm">0.0000</span>
-            <span className="w-6 h-6 rounded-full bg-green-500 inline-block" />
-          </div>
-        </header>
+      <main className="min-h-screen bg-background">
+        <AssistantHeader showBackButton={false} />
 
-        <div className="mt-4">
-          <a href="/" className="text-sm underline">Volver al inicio</a>
-        </div>
-
-        <section className="max-w-5xl mx-auto mt-20 text-center">
-          <h1 className="text-4xl font-extrabold">Hola {name},</h1>
-          <h2 className="text-4xl font-extrabold mt-2">¿Qué quieres reciclar hoy?</h2>
+        <section className="px-4 sm:px-6 lg:px-8 py-10 max-w-5xl mx-auto text-center">
+          <h1 className="text-3xl sm:text-4xl font-extrabold">Hola {name},</h1>
+          <h2 className="text-3xl sm:text-4xl font-extrabold mt-2">¿Qué quieres reciclar hoy?</h2>
           {loading ? (
             <div className="mt-12 grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-7 gap-8">
               {Array.from({ length: 7 }).map((_, i) => (

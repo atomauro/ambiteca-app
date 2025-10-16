@@ -1,8 +1,8 @@
 import Head from "next/head";
-import Image from "next/image";
 import { useRouter } from "next/router";
 import { useEffect, useMemo, useState } from "react";
 import toast from "react-hot-toast";
+import AssistantHeader from "@/components/AssistantHeader";
 
 export default function WeightPage() {
   const router = useRouter();
@@ -71,24 +71,11 @@ export default function WeightPage() {
       <Head>
         <title>Ingresa el peso</title>
       </Head>
-      <main className="min-h-screen bg-white px-6 sm:px-12 py-12">
-        <header className="flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <Image src="/images/logoambiteca.png" alt="Ambitecapp" width={36} height={36} />
-            <span className="font-semibold tracking-wide">AMBITECAPP</span>
-          </div>
-          <div className="flex items-center gap-3">
-            <span className="text-sm">0.0000</span>
-            <span className="w-6 h-6 rounded-full bg-green-500 inline-block" />
-          </div>
-        </header>
+      <main className="min-h-screen bg-background">
+        <AssistantHeader showBackButton={false} />
 
-        <div className="mt-4">
-          <a href="/" className="text-sm underline">Volver al inicio</a>
-        </div>
-
-        <section className="max-w-5xl mx-auto mt-14">
-          <h1 className="text-4xl font-extrabold">Ingresa el peso que muestra la balanza</h1>
+        <section className="px-4 sm:px-6 lg:px-8 py-10 max-w-5xl mx-auto">
+          <h1 className="text-3xl sm:text-4xl font-extrabold">Ingresa el peso que muestra la balanza</h1>
           <div className="mt-10 grid grid-cols-1 md:grid-cols-2 gap-12 items-start">
             <div className="grid grid-cols-3 gap-6 max-w-xs">
               {Array.from({ length: 9 }).map((_, i) => (
@@ -103,7 +90,14 @@ export default function WeightPage() {
               <p className="font-semibold mt-1">Medida: {unit}</p>
               <div className="mt-1 text-sm text-muted-foreground">Tarifa: {ppvRate} PPV / {unit}</div>
               <div className="mt-1 text-sm font-semibold">Estimado: {estimated.toFixed(2)} PPV</div>
-              <input value={weight} onChange={(e) => setWeight(e.target.value)} placeholder="Peso" className="mt-4 w-full max-w-md rounded-full bg-gray-100 px-5 py-3" />
+              <input
+                value={weight}
+                onChange={(e) => setWeight(e.target.value)}
+                placeholder="Peso"
+                className="mt-4 w-full max-w-md rounded-full bg-gray-100 px-5 py-3"
+                required
+                inputMode="decimal"
+              />
               <div className="mt-8 flex gap-4">
                 <button onClick={saveDraft} className="rounded-full bg-orange-600 text-white px-6 py-3 font-semibold">Guardar</button>
                 <button onClick={saveDraft} className="rounded-full bg-green-500 hover:bg-green-600 text-white px-6 py-3 font-semibold">Convertir</button>

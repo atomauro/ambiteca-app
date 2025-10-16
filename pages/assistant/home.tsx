@@ -135,17 +135,14 @@ export default function AssistantHome() {
               </CardHeader>
               <CardContent>
                 <div className="grid grid-cols-2 gap-3 text-sm">
-                  <Link href="/assistant/login" className="border rounded-md p-3 hover:bg-muted transition-colors flex items-center gap-2">
-                    <LogIn className="size-4" /> Ingresar usuario
+                  <Link href="/assistant/login" className="col-span-2 rounded-md bg-green-600 hover:bg-green-700 text-white p-3 transition-colors flex items-center gap-2">
+                    <LogIn className="size-4 text-white" /> Cargar material
                   </Link>
-                  <Link href="/assistant/register" className="border rounded-md p-3 hover:bg-muted transition-colors flex items-center gap-2">
-                    <UserPlus className="size-4" /> Registrar nuevo
+                  <Link href="/assistant/history" className="rounded-md bg-orange-600 hover:bg-orange-700 text-white p-3 transition-colors flex items-center gap-2">
+                    <Clock className="size-4 text-white" /> Historial
                   </Link>
-                  <Link href="/assistant/history" className="border rounded-md p-3 hover:bg-muted transition-colors flex items-center gap-2">
-                    <Clock className="size-4" /> Historial
-                  </Link>
-                  <Link href="/assistant/rewards" className="border rounded-md p-3 hover:bg-muted transition-colors flex items-center gap-2">
-                    <ShoppingBag className="size-4" /> PPV y recompensas
+                  <Link href="/assistant/rewards" className="rounded-md bg-blue-600 hover:bg-blue-700 text-white p-3 transition-colors flex items-center gap-2">
+                    <ShoppingBag className="size-4 text-white" /> PPV y recompensas
                   </Link>
                 </div>
               </CardContent>
