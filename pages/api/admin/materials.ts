@@ -22,7 +22,8 @@ export default withAdminAuth(async function handler(req: NextApiRequest, res: Ne
         .from('material_conversion_rates')
         .select('id,material_id,ambiteca_id,ppv_per_kg,valid_from,valid_to,created_at')
         .eq('material_id', materialId)
-        .order('valid_from', { ascending: false });
+        .order('valid_from', { ascending: false })
+        .order('created_at', { ascending: false });
 
       return res.status(200).json({
         material,
@@ -37,10 +38,11 @@ export default withAdminAuth(async function handler(req: NextApiRequest, res: Ne
     // Obtener tarifa vigente (simple: por material global, sin ambiteca)
     const { data: rates } = await supabaseAdmin
       .from('material_conversion_rates')
-      .select('material_id,ppv_per_kg,valid_from,ambiteca_id')
+      .select('material_id,ppv_per_kg,valid_from,ambiteca_id,created_at')
       .or(ambitecaId ? `ambiteca_id.eq.${ambitecaId},ambiteca_id.is.null` : 'ambiteca_id.is.null')
       .lte('valid_from', new Date().toISOString().slice(0,10))
-      .order('valid_from', { ascending: false });
+      .order('valid_from', { ascending: false })
+      .order('created_at', { ascending: false });
     const materials = (mats || []).map(m => ({
       id: m.id,
       name: m.name,

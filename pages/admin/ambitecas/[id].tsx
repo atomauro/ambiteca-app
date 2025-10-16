@@ -6,6 +6,7 @@ import { AdminSidebar } from "@/components/admin/AdminSidebar";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft, Building2 } from "lucide-react";
 import { useAdminGuard } from "@/lib/hooks/useAdminGuard";
+import { cropAndCompressImageSquare } from "@/lib/utils-client";
 
 export const getServerSideProps = async () => ({ props: {} });
 
@@ -129,7 +130,7 @@ export default function AdminAmbitecaDetail() {
                     {amb.image_url ? (<img src={amb.image_url} alt="img" className="h-16 w-16 object-cover rounded" />) : (<div className="h-16 w-16 grid place-items-center text-xs text-muted-foreground border rounded">Sin imagen</div>)}
                     <label className="text-xs underline cursor-pointer">
                       Subir
-                      <input type="file" accept="image/*" className="hidden" onChange={async (e)=>{ const f=e.target.files?.[0]; if (!f) return; try { setUploading(true); const sign = await fetch('/api/admin/ambitecas-sign-upload',{ method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ fileName: f.name })}); const signed = await sign.json(); if (!sign.ok) throw new Error(signed?.error||'No se pudo firmar'); const put = await fetch(signed.uploadUrl, { method:'PUT', headers:{'Content-Type': f.type}, body: f }); if (!put.ok) throw new Error('Fallo al subir'); const res = await fetch('/api/admin/ambitecas', { method:'PATCH', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ id: ambId, image_url: signed.publicUrl }) }); if (!res.ok) throw new Error('Fallo al actualizar'); setAmb((prev:any)=> ({ ...prev, image_url: signed.publicUrl })); } finally { setUploading(false);} }} />
+                      <input type="file" accept="image/*" className="hidden" onChange={async (e)=>{ const raw=e.target.files?.[0]; if (!raw) return; try { setUploading(true); const f = await cropAndCompressImageSquare(raw, { maxSize: 800, quality: 0.85 }); const sign = await fetch('/api/admin/ambitecas-sign-upload',{ method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ fileName: f.name })}); const signed = await sign.json(); if (!sign.ok) throw new Error(signed?.error||'No se pudo firmar'); const put = await fetch(signed.uploadUrl, { method:'PUT', headers:{'Content-Type': f.type}, body: f }); if (!put.ok) throw new Error('Fallo al subir'); const res = await fetch('/api/admin/ambitecas', { method:'PATCH', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ id: ambId, image_url: signed.publicUrl }) }); if (!res.ok) throw new Error('Fallo al actualizar'); setAmb((prev:any)=> ({ ...prev, image_url: signed.publicUrl })); } finally { setUploading(false);} }} />
                     </label>
                   </div>
                 </div>

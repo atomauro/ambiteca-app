@@ -8,6 +8,7 @@ import { AdminSidebar } from "@/components/admin/AdminSidebar";
 import { Search, Filter, Package, ArrowLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { cropAndCompressImageSquare } from "@/lib/utils-client";
 
 export default function AdminMaterials() {
   const router = useRouter();
@@ -146,7 +147,7 @@ export default function AdminMaterials() {
                         <td className="p-3">
                           <div className="flex items-center gap-2">
                             <input
-                              defaultValue={m.ppv_per_kg}
+                              value={m.ppv_per_kg}
                               onChange={(e) => setMaterials(prev => prev.map(x => x.id===m.id? { ...x, ppv_per_kg: e.target.value }: x))}
                               className="w-24 rounded border px-2 py-1 text-sm"
                             />
@@ -159,6 +160,11 @@ export default function AdminMaterials() {
                                   const data = await res.json();
                                   if (!res.ok) throw new Error(data?.error || 'Error');
                                   toast.success('Tarifa guardada');
+                                  // Forzar refetch para ver el valor vigente calculado (ambiteca/global)
+                                  const url = new URL('/api/admin/materials', window.location.origin);
+                                  if (ambSel) url.searchParams.set('ambiteca_id', ambSel);
+                                  const fresh = await fetch(url.toString()).then(r=>r.json());
+                                  setMaterials(fresh.materials || []);
                                 } catch (e: any) {
                                   toast.error(e.message || 'No se pudo guardar');
                                 }
@@ -178,14 +184,14 @@ export default function AdminMaterials() {
                             )}
                             <label className="text-xs underline cursor-pointer">
                               Subir
-                              <input type="file" accept="image/*" className="hidden" onChange={async (e)=>{ const f=e.target.files?.[0]; if (!f) return; try { const sign = await fetch('/api/admin/materials-sign-upload',{ method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ fileName: f.name })}); const signed = await sign.json(); if (!sign.ok) throw new Error(signed?.error||'No se pudo firmar'); const put = await fetch(signed.uploadUrl, { method:'PUT', headers:{'Content-Type': f.type}, body: f }); if (!put.ok) throw new Error('Fallo al subir'); const res = await fetch('/api/admin/materials', { method:'PATCH', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ id: m.id, image_url: signed.publicUrl }) }); if (!res.ok) throw new Error('Fallo al actualizar'); setMaterials(prev => prev.map(x=>x.id===m.id? { ...x, image_url: signed.publicUrl }: x)); } catch(e:any){ toast.error(e.message || 'No se pudo subir'); }} } />
+                              <input type="file" accept="image/*" className="hidden" onChange={async (e)=>{ const raw=e.target.files?.[0]; if (!raw) return; try { const f = await cropAndCompressImageSquare(raw, { maxSize: 600, quality: 0.85 }); const sign = await fetch('/api/admin/materials-sign-upload',{ method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ fileName: f.name })}); const signed = await sign.json(); if (!sign.ok) throw new Error(signed?.error||'No se pudo firmar'); const put = await fetch(signed.uploadUrl, { method:'PUT', headers:{'Content-Type': f.type}, body: f }); if (!put.ok) throw new Error('Fallo al subir'); const res = await fetch('/api/admin/materials', { method:'PATCH', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ id: m.id, image_url: signed.publicUrl }) }); if (!res.ok) throw new Error('Fallo al actualizar'); setMaterials(prev => prev.map(x=>x.id===m.id? { ...x, image_url: signed.publicUrl }: x)); toast.success('Imagen actualizada'); } catch(e:any){ toast.error(e.message || 'No se pudo subir'); }} } />
                             </label>
                           </div>
                         </td>
                         <td className="p-3 text-right">
                           <div className="flex justify-end gap-2">
                             <Link href={`/admin/materials/${m.id}`} className="px-3 py-1 rounded border">Ver</Link>
-                            <button onClick={async ()=>{ if(!confirm('¿Eliminar material?')) return; const res = await fetch('/api/admin/materials', { method:'DELETE', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ id: m.id }) }); if(res.ok) setMaterials(prev=>prev.filter(x=>x.id!==m.id)); }} className="px-3 py-1 rounded border text-red-600">Eliminar</button>
+                            <button onClick={async ()=>{ try { if(!confirm('¿Eliminar material?')) return; const res = await fetch('/api/admin/materials', { method:'DELETE', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ id: m.id }) }); if(!res.ok) throw new Error('No se pudo eliminar'); setMaterials(prev=>prev.filter(x=>x.id!==m.id)); toast.success('Material eliminado'); } catch(e:any) { toast.error(e.message || 'Error al eliminar'); } }} className="px-3 py-1 rounded border text-red-600">Eliminar</button>
                             <button
                               onClick={async ()=>{
                                 try {

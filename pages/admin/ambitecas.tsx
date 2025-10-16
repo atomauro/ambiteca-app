@@ -6,6 +6,7 @@ import { useRouter } from "next/router";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { ArrowLeft, Search, Building2 } from "lucide-react";
+import toast from "react-hot-toast";
 
 interface Ambiteca {
   id: string;
@@ -40,18 +41,30 @@ export default function AdminAmbitecas() {
     const prev = ambs;
     setAmbs(prev.map(a => a.id===id? { ...a, is_active: !is_active } : a));
     const res = await fetch('/api/admin/ambitecas', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ id, is_active: !is_active }) });
-    if (!res.ok) setAmbs(prev); // rollback
+    if (!res.ok) {
+      setAmbs(prev);
+      toast.error('No se pudo actualizar');
+    } else {
+      toast.success('Estado actualizado');
+    }
   };
 
   const createAmbiteca = async () => {
-    if (!form.name.trim()) return;
+    if (!form.name.trim()) {
+      toast.error('Ingresa un nombre');
+      return;
+    }
     setCreating(true);
-    const res = await fetch('/api/admin/ambitecas', { method:'PUT', headers:{'Content-Type':'application/json'}, body: JSON.stringify(form) });
-    const d = await res.json();
-    if (res.ok) {
+    try {
+      const res = await fetch('/api/admin/ambitecas', { method:'PUT', headers:{'Content-Type':'application/json'}, body: JSON.stringify(form) });
+      const d = await res.json();
+      if (!res.ok) throw new Error(d?.error || 'No se pudo crear');
       setShowCreate(false);
       setForm({ name:'', address:'', city:'San Luis', state:'Antioquia' });
       setAmbs(prev => [{ id: d.id, name: form.name, is_active: true, address: form.address, city: form.city }, ...prev]);
+      toast.success('Ambiteca creada');
+    } catch (e:any) {
+      toast.error(e.message || 'Error creando ambiteca');
     }
     setCreating(false);
   };
@@ -129,7 +142,7 @@ export default function AdminAmbitecas() {
                           <td className="p-3 text-right">
                             <div className="flex justify-end gap-2">
                               <Link href={`/admin/ambitecas/${a.id}`} className="px-3 py-1 rounded border">Ver</Link>
-                              <button onClick={async ()=>{ if(!confirm('¿Eliminar ambiteca?')) return; const res = await fetch('/api/admin/ambitecas', { method:'DELETE', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ id: a.id }) }); if(res.ok) setAmbs(prev=>prev.filter(x=>x.id!==a.id)); }} className="px-3 py-1 rounded border text-red-600">Eliminar</button>
+                              <button onClick={async ()=>{ try { if(!confirm('¿Eliminar ambiteca?')) return; const res = await fetch('/api/admin/ambitecas', { method:'DELETE', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ id: a.id }) }); if(!res.ok) throw new Error('No se pudo eliminar'); setAmbs(prev=>prev.filter(x=>x.id!==a.id)); toast.success('Ambiteca eliminada'); } catch(e:any){ toast.error(e.message || 'Error al eliminar'); } }} className="px-3 py-1 rounded border text-red-600">Eliminar</button>
                               <button onClick={()=>toggleActive(a.id, a.is_active)} className="px-3 py-1 rounded border">{a.is_active? 'Desactivar':'Activar'}</button>
                             </div>
                           </td>
@@ -171,7 +184,7 @@ export default function AdminAmbitecas() {
               </div>
             </div>
             <div className="mt-4 flex justify-end gap-2">
-              <Button variant="outline" size="sm" onClick={()=>setShowCreate(false)}>Cancelar</Button>
+              <Button variant="outline" size="sm" onClick={()=>setShowCreate(false)} disabled={creating}>Cancelar</Button>
               <Button size="sm" disabled={creating} onClick={createAmbiteca}>{creating? 'Creando…':'Crear'}</Button>
             </div>
           </div>
