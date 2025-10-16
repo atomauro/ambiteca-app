@@ -8,11 +8,11 @@ export default function HistoryPerson() {
       <Head>
         <title>Historial de Entrega por persona</title>
       </Head>
-      <main className="min-h-screen bg-white px-6 sm:px-12 pt-6 pb-12">
+      <main className="min-h-screen bg-background">
         <AssistantHeader showBackButton={false} />
 
-        <section className="max-w-3xl mx-auto mt-24 text-center">
-          <h1 className="text-4xl font-extrabold">Historial de Entrega por persona</h1>
+        <section className="px-4 sm:px-6 lg:px-8 py-10 max-w-3xl mx-auto text-center">
+          <h1 className="text-3xl sm:text-4xl font-extrabold">Historial de Entrega por persona</h1>
           <div className="mt-10 space-y-4 max-w-xl mx-auto">
             <input placeholder="Nombre" className="w-full rounded-full bg-gray-100 px-5 py-3" />
             <select className="w-full rounded-full bg-gray-100 px-5 py-3">

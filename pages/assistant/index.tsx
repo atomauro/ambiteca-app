@@ -4,11 +4,13 @@ import Link from "next/link";
 import { useRouter } from "next/router";
 import { Recycle } from "lucide-react";
 import UserMenu from "@/components/UserMenu";
+import { usePrivy } from "@privy-io/react-auth";
 import { useEffect, useState } from "react";
 import { Skeleton } from "@/components/ui/skeleton";
 
 export default function AssistantLanding() {
   const router = useRouter();
+  const { ready, authenticated } = usePrivy();
   const [ambs, setAmbs] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [ambSel, setAmbSel] = useState<string>("");
@@ -24,6 +26,13 @@ export default function AssistantLanding() {
     };
     load();
   }, []);
+  useEffect(() => {
+    if (!ready) return;
+    if (authenticated) {
+      setRedirecting(true);
+      router.replace('/assistant/home');
+    }
+  }, [ready, authenticated, router]);
   const handleEnter = () => { setRedirecting(true); router.push({ pathname: "/assistant/home", query: { ambiteca_id: ambSel } }); };
 
   return (

@@ -55,11 +55,11 @@ export default function RewardsPage() {
       <Head>
         <title>Gestión de puntos y recompensas</title>
       </Head>
-      <main className="min-h-screen bg-white px-6 sm:px-12 py-12">
-        <AssistantHeader />
+      <main className="min-h-screen bg-background">
+        <AssistantHeader showBackButton={false} />
 
-        <section className="max-w-4xl mx-auto mt-20">
-          <h1 className="text-4xl font-extrabold text-center mb-10">Gestión de puntos PPV y recompensas</h1>
+        <section className="px-4 sm:px-6 lg:px-8 py-10 max-w-4xl mx-auto">
+          <h1 className="text-3xl sm:text-4xl font-extrabold text-center mb-10">Gestión de puntos PPV y recompensas</h1>
           
           {!authenticated ? (
             <div className="text-center bg-yellow-50 border border-yellow-200 rounded-lg p-8">

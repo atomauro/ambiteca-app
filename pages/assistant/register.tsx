@@ -17,11 +17,11 @@ export default function AssistantRegister() {
       <Head>
         <title>Registrar usuario nuevo</title>
       </Head>
-      <main className="min-h-screen bg-white px-6 sm:px-12 pt-6 pb-12">
+      <main className="min-h-screen bg-background">
         <AssistantHeader showBackButton={false} />
 
-        <section className="max-w-xl mx-auto mt-16 text-center">
-          <h1 className="text-4xl font-extrabold">Registrar usuario nuevo</h1>
+        <section className="px-4 sm:px-6 lg:px-8 py-10 max-w-xl mx-auto text-center">
+          <h1 className="text-3xl sm:text-4xl font-extrabold">Registrar usuario nuevo</h1>
           <div className="mt-10 space-y-4">
             <input value={name} onChange={(e) => setName(e.target.value)} placeholder="Nombre" className="w-full rounded-full bg-gray-100 px-5 py-3" />
             <select value={docType} onChange={(e) => setDocType(e.target.value)} className="w-full rounded-full bg-gray-100 px-5 py-3">
@@ -34,6 +34,9 @@ export default function AssistantRegister() {
             <input value={email} onChange={(e) => setEmail(e.target.value)} placeholder="Correo" className="w-full rounded-full bg-gray-100 px-5 py-3" />
             <input type="password" placeholder="Contraseña" className="w-full rounded-full bg-gray-100 px-5 py-3" />
             <button onClick={goNext} className="w-full rounded-full bg-green-500 hover:bg-green-600 text-white px-8 py-3 font-semibold">Registrar</button>
+          </div>
+          <div className="mt-8">
+            <button onClick={() => router.back()} className="rounded-full border px-6 py-2 text-sm hover:bg-muted">Volver</button>
           </div>
         </section>
       </main>
