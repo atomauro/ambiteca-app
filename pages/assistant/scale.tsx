@@ -1,6 +1,6 @@
 import Head from "next/head";
 import AssistantHeader from "@/components/AssistantHeader";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import toast from "react-hot-toast";
 import { useRouter } from "next/router";
 
@@ -10,8 +10,10 @@ export default function ScalePage() {
   const material = (router.query.material as string) || "Material";
   const materialId = (router.query.material_id as string) || "";
   const unit = (router.query.unit as string) || "kg";
+  const ambitecaId = (router.query.ambiteca_id as string) || "";
   const [imageUrl, setImageUrl] = useState<string | null>(null);
   const [weight, setWeight] = useState<string>("");
+  const [ppvRate, setPpvRate] = useState<number>(0);
 
   const formatUnit = (u?: string): string => {
     const s = (u || '').trim().toLowerCase();
@@ -29,10 +31,30 @@ export default function ScalePage() {
         url.searchParams.set('id', materialId);
         const res = await fetch(url.toString());
         const d = await res.json();
-        if (res.ok && d?.material?.image_url) setImageUrl(d.material.image_url as string);
+        if (res.ok) {
+          if (d?.material?.image_url) setImageUrl(d.material.image_url as string);
+          const rates = (d?.rates || []) as Array<any>;
+          const today = new Date().toISOString().slice(0,10);
+          const matchAmb = ambitecaId ? rates.find(r => r.ambiteca_id === ambitecaId && r.valid_from <= today && (!r.valid_to || r.valid_to >= today)) : null;
+          const matchGlobal = rates.find(r => !r.ambiteca_id && r.valid_from <= today && (!r.valid_to || r.valid_to >= today));
+          const rate = Number(matchAmb?.ppv_per_kg ?? matchGlobal?.ppv_per_kg ?? 0);
+          setPpvRate(Number.isFinite(rate) ? rate : 0);
+        }
       } catch {}
     })();
-  }, [materialId]);
+  }, [materialId, ambitecaId]);
+
+  const weightNumber = useMemo(() => {
+    const raw = (weight || "").trim();
+    if (!raw) return 0;
+    const n = Number(raw);
+    return Number.isFinite(n) ? n : 0;
+  }, [weight]);
+
+  const estimatedPpv = useMemo(() => {
+    const est = (ppvRate || 0) * weightNumber;
+    return Number.isFinite(est) ? est : 0;
+  }, [ppvRate, weightNumber]);
 
   const goNext = () => {
     const raw = (weight || "").trim();
@@ -88,6 +110,9 @@ export default function ScalePage() {
               <span className="pointer-events-none absolute inset-y-0 right-4 flex items-center text-sm text-muted-foreground">
                 {formatUnit(unit)}
               </span>
+            </div>
+            <div className="text-sm text-muted-foreground">
+              Tarifa: {ppvRate.toFixed(3)} PPV / {formatUnit(unit)} · Estimado: <span className="font-semibold text-foreground">{estimatedPpv.toFixed(2)} PPV</span>
             </div>
             <div className="text-xs text-muted-foreground">Usa punto (.) para decimales. Máximo 3.</div>
             <div className="flex justify-center gap-4">

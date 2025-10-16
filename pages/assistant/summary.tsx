@@ -1,6 +1,6 @@
 import Head from "next/head";
 import { useRouter } from "next/router";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import toast from "react-hot-toast";
 import AssistantHeader from "../../components/AssistantHeader";
 
@@ -8,6 +8,8 @@ export default function SummaryPage() {
   const router = useRouter();
   const material = (router.query.material as string) || "Material";
   const weightRaw = (router.query.weight as string) || "0,00";
+  const ambitecaId = (router.query.ambiteca_id as string) || '';
+  const materialId = (router.query.material_id as string) || '';
   const weightKg = useMemo(() => {
     const n = Number((weightRaw || "0").replace(",", "."));
     return Number.isFinite(n) ? Number(n.toFixed(3)) : 0;
@@ -19,6 +21,9 @@ export default function SummaryPage() {
   const [awarding, setAwarding] = useState(false);
   const [txHash, setTxHash] = useState<string | null>(null);
   const draftId = (router.query.draftId as string) || null;
+  const [ppvRate, setPpvRate] = useState<number>(0);
+  const [ratesLoading, setRatesLoading] = useState<boolean>(false);
+  const estimatedPpv = useMemo(() => Number(((ppvRate || 0) * weightKg).toFixed(3)), [ppvRate, weightKg]);
 
   const confirmDelivery = async () => {
     if (loading) return null;
@@ -93,6 +98,36 @@ export default function SummaryPage() {
     hide();
   };
 
+  const loadRate = async () => {
+    if (!materialId) return;
+    try {
+      setRatesLoading(true);
+      const url = new URL('/api/admin/materials', window.location.origin);
+      url.searchParams.set('id', materialId);
+      const res = await fetch(url.toString());
+      const d = await res.json();
+      if (!res.ok) throw new Error(d?.error || 'No se pudo cargar tarifa');
+      const rates: any[] = d.rates || [];
+      const today = new Date().toISOString().slice(0,10);
+      const matchAmb = ambitecaId ? rates.find(r => r.ambiteca_id === ambitecaId && r.valid_from <= today && (!r.valid_to || r.valid_to >= today)) : null;
+      const matchGlobal = rates.find(r => !r.ambiteca_id && r.valid_from <= today && (!r.valid_to || r.valid_to >= today));
+      const rate = Number(matchAmb?.ppv_per_kg ?? matchGlobal?.ppv_per_kg ?? 0);
+      setPpvRate(Number.isFinite(rate) ? rate : 0);
+    } finally {
+      setRatesLoading(false);
+    }
+  };
+
+  const calculateRewards = async () => {
+    if (loading || awarding) return;
+    await loadRate();
+  };
+
+  useEffect(() => {
+    if (!router.isReady) return;
+    loadRate();
+  }, [router.isReady, materialId, ambitecaId, weightKg]);
+
   return (
     <>
       <Head>
@@ -132,7 +167,13 @@ export default function SummaryPage() {
             </div>
             <div className="bg-gray-200 rounded-lg p-8">
               <p className="font-bold text-xl">Equivalente</p>
-              <p className="text-4xl mt-4">{awardedPpv != null ? awardedPpv.toFixed(3) : "—"}</p>
+              <p className="text-4xl mt-4">
+                {awardedPpv != null
+                  ? awardedPpv.toFixed(3)
+                  : ratesLoading
+                    ? 'Calculando…'
+                    : estimatedPpv.toFixed(3)}
+              </p>
               <p className="mt-2">PPV</p>
             </div>
           </div>
@@ -143,21 +184,30 @@ export default function SummaryPage() {
             {deliveryId ? <p>ID de entrega: {deliveryId}</p> : null}
             {txHash ? <p>Tx hash: {txHash}</p> : null}
           </div>
-          <div className="mt-8 flex justify-center gap-4">
-            <button className="rounded-full bg-orange-600 text-white px-6 py-3 font-semibold" onClick={() => router.push({ pathname: "/assistant/scale", query: { ...router.query } })}>Volver a pesar</button>
+          <div className="mt-8 flex flex-col sm:flex-row justify-center gap-3 sm:gap-4">
+            <button className="rounded-full border px-6 py-3 text-sm sm:text-base hover:bg-muted" onClick={() => router.push({ pathname: "/assistant/scale", query: { ...router.query } })}>Volver a pesar</button>
+            <button 
+              onClick={calculateRewards}
+              disabled={loading || awarding || (!!deliveryId && awardedPpv != null)}
+              className="rounded-full bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 font-semibold disabled:opacity-60"
+            >
+              {deliveryId && awardedPpv != null ? 'Recompensas calculadas' : 'Calcular recompensas'}
+            </button>
             <button 
               onClick={done} 
               disabled={loading || awarding} 
               className="rounded-full bg-green-500 hover:bg-green-600 text-white px-6 py-3 font-semibold disabled:opacity-60 flex items-center gap-2"
             >
-              {loading && "Registrando…"}
-              {awarding && (
+              {loading ? (
+                "Registrando…"
+              ) : awarding ? (
                 <>
                   <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
                   Acreditando PPV...
                 </>
+              ) : (
+                "Aceptar"
               )}
-              {!loading && !mintingTokens && "Aceptar"}
             </button>
           </div>
         </section>
