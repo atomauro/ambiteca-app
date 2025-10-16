@@ -2,7 +2,10 @@ import Head from "next/head";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { AdminSidebar } from "@/components/admin/AdminSidebar";
-import { supabase } from "@/lib/supabase/client";
+import { useRouter } from "next/router";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { ArrowLeft, Search, Building2 } from "lucide-react";
 
 interface Ambiteca {
   id: string;
@@ -11,15 +14,19 @@ interface Ambiteca {
 }
 
 export default function AdminAmbitecas() {
+  const router = useRouter();
   const [ambs, setAmbs] = useState<Ambiteca[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
+  const [creating, setCreating] = useState(false);
+  const [name, setName] = useState("");
 
   useEffect(() => {
     const load = async () => {
       setLoading(true);
-      const { data, error } = await supabase.from('ambitecas').select('id,name,is_active').order('name');
-      if (!error) setAmbs(data || []);
+      const res = await fetch('/api/admin/ambitecas');
+      const d = await res.json();
+      if (res.ok) setAmbs(d.ambitecas || []);
       setLoading(false);
     };
     load();
@@ -30,8 +37,20 @@ export default function AdminAmbitecas() {
   const toggleActive = async (id: string, is_active: boolean) => {
     const prev = ambs;
     setAmbs(prev.map(a => a.id===id? { ...a, is_active: !is_active } : a));
-    const { error } = await supabase.from('ambitecas').update({ is_active: !is_active }).eq('id', id);
-    if (error) setAmbs(prev); // rollback
+    const res = await fetch('/api/admin/ambitecas', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ id, is_active: !is_active }) });
+    if (!res.ok) setAmbs(prev); // rollback
+  };
+
+  const createAmbiteca = async () => {
+    if (!name.trim()) return;
+    setCreating(true);
+    const res = await fetch('/api/admin/ambitecas', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ name }) });
+    const d = await res.json();
+    if (res.ok) {
+      setName("");
+      setAmbs(prev => [{ id: d.id, name, is_active: true }, ...prev]);
+    }
+    setCreating(false);
   };
 
   return (
@@ -42,11 +61,20 @@ export default function AdminAmbitecas() {
       <div className="min-h-screen bg-background">
         <header className="border-b bg-card">
           <div className="flex h-16 items-center px-6">
-            <div className="flex items-center gap-3">
-              <h1 className="text-xl font-bold">Ambitecas</h1>
+            <div className="flex items-center space-x-4">
+              <Button variant="ghost" size="sm" onClick={() => router.back()}>
+                <ArrowLeft className="h-4 w-4" />
+              </Button>
+              <Building2 className="h-6 w-6 text-primary" />
+              <div>
+                <h1 className="text-xl font-bold">Gestión de Ambitecas</h1>
+                <p className="text-sm text-muted-foreground">{filtered.length} ambitecas</p>
+              </div>
             </div>
             <div className="ml-auto">
-              <Link href="/admin" className="underline text-sm">Volver al panel</Link>
+              <Link href="/admin">
+                <Button variant="outline" size="sm">Dashboard</Button>
+              </Link>
             </div>
           </div>
         </header>
@@ -54,11 +82,26 @@ export default function AdminAmbitecas() {
           <div className="flex gap-6">
             <AdminSidebar />
             <div className="flex-1">
-              <div className="rounded-lg border mb-6 p-4">
-                <div className="flex flex-col sm:flex-row gap-4">
-                  <input value={search} onChange={e=>setSearch(e.target.value)} placeholder="Buscar ambiteca..." className="w-full sm:w-80 rounded border px-3 py-2 text-sm" />
-                </div>
-              </div>
+              <Card className="mb-6">
+                <CardHeader>
+                  <CardTitle>Filtros</CardTitle>
+                  <CardDescription>Busca y administra ambitecas</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="flex flex-col sm:flex-row gap-4">
+                    <div className="flex-1">
+                      <div className="relative">
+                        <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+                        <input value={search} onChange={e=>setSearch(e.target.value)} placeholder="Buscar ambiteca..." className="w-full pl-10 pr-4 py-2 border border-input rounded-md bg-background" />
+                      </div>
+                    </div>
+                    <div className="flex items-end">
+                      <input value={name} onChange={e=>setName(e.target.value)} placeholder="Nueva ambiteca" className="w-56 px-3 py-2 border rounded-md bg-background" />
+                      <Button className="ml-2" size="sm" disabled={creating} onClick={createAmbiteca}>{creating? 'Creando…' : 'Crear'}</Button>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
 
               {loading ? (
                 <div className="h-40 grid place-items-center text-sm text-muted-foreground">Cargando…</div>
