@@ -22,6 +22,7 @@ export default function SummaryPage() {
   const [txHash, setTxHash] = useState<string | null>(null);
   const draftId = (router.query.draftId as string) || null;
   const [ppvRate, setPpvRate] = useState<number>(0);
+  const [imageUrl, setImageUrl] = useState<string | null>(null);
   const [ratesLoading, setRatesLoading] = useState<boolean>(false);
   const estimatedPpv = useMemo(() => Number(((ppvRate || 0) * weightKg).toFixed(3)), [ppvRate, weightKg]);
 
@@ -104,15 +105,13 @@ export default function SummaryPage() {
       setRatesLoading(true);
       const url = new URL('/api/admin/materials', window.location.origin);
       url.searchParams.set('id', materialId);
+      if (ambitecaId) url.searchParams.set('ambiteca_id', ambitecaId);
       const res = await fetch(url.toString());
       const d = await res.json();
       if (!res.ok) throw new Error(d?.error || 'No se pudo cargar tarifa');
-      const rates: any[] = d.rates || [];
-      const today = new Date().toISOString().slice(0,10);
-      const matchAmb = ambitecaId ? rates.find(r => r.ambiteca_id === ambitecaId && r.valid_from <= today && (!r.valid_to || r.valid_to >= today)) : null;
-      const matchGlobal = rates.find(r => !r.ambiteca_id && r.valid_from <= today && (!r.valid_to || r.valid_to >= today));
-      const rate = Number(matchAmb?.ppv_per_kg ?? matchGlobal?.ppv_per_kg ?? 0);
+      const rate = Number(d?.current_rate ?? 0);
       setPpvRate(Number.isFinite(rate) ? rate : 0);
+      if (d?.material?.image_url) setImageUrl(d.material.image_url as string);
     } finally {
       setRatesLoading(false);
     }
@@ -137,6 +136,7 @@ export default function SummaryPage() {
         <AssistantHeader showBackButton={false} />
 
         <section className="px-4 sm:px-6 lg:px-8 py-10 max-w-5xl mx-auto text-center">
+         
           {deliveryId ? (
             <div className="mb-6 text-left bg-green-50 border border-green-200 text-green-800 rounded-md px-4 py-3">
               <div className="flex flex-wrap items-center justify-between gap-3">
@@ -145,6 +145,7 @@ export default function SummaryPage() {
               </div>
             </div>
           ) : null}
+          
           {draftId && !deliveryId ? (
             <div className="mb-6 text-left bg-yellow-50 border border-yellow-200 text-yellow-800 rounded-md px-4 py-3">
               <div className="flex flex-wrap items-center justify-between gap-3">
@@ -159,6 +160,14 @@ export default function SummaryPage() {
             </div>
           ) : null}
           <h1 className="text-4xl font-extrabold">¡Listo! Tu material ha sido registrado.</h1>
+          <div className="mb-4 flex justify-center mt-4">
+            {imageUrl ? (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img src={imageUrl} alt={material} className="w-24 h-24 sm:w-28 sm:h-28 rounded-full object-cover mt-4" />
+            ) : (
+              <div className="w-24 h-24 sm:w-28 sm:h-28 rounded-full bg-muted" />
+            )}
+          </div>
           <div className="mt-12 grid grid-cols-1 md:grid-cols-2 gap-10">
             <div className="bg-gray-200 rounded-lg p-8">
               <p className="font-bold text-xl">Peso</p>
@@ -177,12 +186,16 @@ export default function SummaryPage() {
               <p className="mt-2">PPV</p>
             </div>
           </div>
-          <div className="max-w-3xl mx-auto text-left mt-8 text-sm">
-            <p>Material: {material}</p>
-            <p>Peso kg: {weightKg.toFixed(2)}</p>
-            <p>PPV: {awardedPpv != null ? awardedPpv.toFixed(3) : "—"}</p>
-            {deliveryId ? <p>ID de entrega: {deliveryId}</p> : null}
-            {txHash ? <p>Tx hash: {txHash}</p> : null}
+          <div className="max-w-3xl mx-auto mt-8">
+            <div className="bg-gray-200 rounded-lg p-8 text-sm text-left md:text-center">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <p>Material: <span className="font-medium">{material}</span></p>
+                <p>Peso: <span className="font-medium">{weightKg.toFixed(2)} kg</span></p>
+                <p>PPV: <span className="font-medium">{awardedPpv != null ? awardedPpv.toFixed(3) : estimatedPpv.toFixed(3)}</span></p>
+                {deliveryId ? <p>ID de entrega: <span className="font-medium">{deliveryId}</span></p> : null}
+                {txHash ? <p>Tx hash: <span className="font-medium">{txHash}</span></p> : null}
+              </div>
+            </div>
           </div>
           <div className="mt-8 flex flex-col sm:flex-row justify-center gap-3 sm:gap-4">
             <button className="rounded-full border px-6 py-3 text-sm sm:text-base hover:bg-muted" onClick={() => router.push({ pathname: "/assistant/scale", query: { ...router.query } })}>Volver a pesar</button>

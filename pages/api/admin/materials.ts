@@ -25,10 +25,17 @@ export default withAdminAuth(async function handler(req: NextApiRequest, res: Ne
         .order('valid_from', { ascending: false })
         .order('created_at', { ascending: false });
 
+      // Calcular tarifa vigente priorizando ambiteca si viene en query
+      const today = new Date().toISOString().slice(0,10);
+      const currentAmb = ambitecaId ? (rates || []).find(r => r.ambiteca_id === ambitecaId && r.valid_from <= today && (!r.valid_to || r.valid_to >= today)) : null;
+      const currentGlobal = (rates || []).find(r => !r.ambiteca_id && r.valid_from <= today && (!r.valid_to || r.valid_to >= today));
+      const current_rate = Number(currentAmb?.ppv_per_kg ?? currentGlobal?.ppv_per_kg ?? 1.0);
+
       return res.status(200).json({
         material,
         ambitecas: ambs || [],
         rates: rates || [],
+        current_rate,
       });
     }
 

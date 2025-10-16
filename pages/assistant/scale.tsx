@@ -29,15 +29,12 @@ export default function ScalePage() {
       try {
         const url = new URL('/api/admin/materials', window.location.origin);
         url.searchParams.set('id', materialId);
+        if (ambitecaId) url.searchParams.set('ambiteca_id', ambitecaId);
         const res = await fetch(url.toString());
         const d = await res.json();
         if (res.ok) {
           if (d?.material?.image_url) setImageUrl(d.material.image_url as string);
-          const rates = (d?.rates || []) as Array<any>;
-          const today = new Date().toISOString().slice(0,10);
-          const matchAmb = ambitecaId ? rates.find(r => r.ambiteca_id === ambitecaId && r.valid_from <= today && (!r.valid_to || r.valid_to >= today)) : null;
-          const matchGlobal = rates.find(r => !r.ambiteca_id && r.valid_from <= today && (!r.valid_to || r.valid_to >= today));
-          const rate = Number(matchAmb?.ppv_per_kg ?? matchGlobal?.ppv_per_kg ?? 0);
+          const rate = Number(d?.current_rate ?? 0);
           setPpvRate(Number.isFinite(rate) ? rate : 0);
         }
       } catch {}
