@@ -96,7 +96,8 @@ export default withAdminAuth(async function handler(req: NextApiRequest, res: Ne
       amount_plv: Number(totalPPV.toFixed(6)),
       reason: 'delivery',
       delivery_id: delivery.id,
-      note: 'pending-onchain'
+      note: 'pending-onchain',
+      status: 'pending'
     })
     if (txErr) return res.status(500).json({ error: txErr.message })
 

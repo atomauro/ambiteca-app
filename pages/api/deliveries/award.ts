@@ -13,17 +13,18 @@ export default withAdminAuth(async function handler(req: NextApiRequest, res: Ne
     // Buscar tx pendiente
     const { data: tx } = await supabaseAdmin
       .from('ppv_transactions')
-      .select('id')
+      .select('id, status')
       .eq('delivery_id', delivery_id)
       .eq('reason', 'delivery')
       .order('created_at', { ascending: false })
       .maybeSingle()
     if (!tx?.id) return res.status(404).json({ error: 'Transacción no encontrada' })
+    if (tx.status === 'sent') return res.status(200).json({ ok: true, already_sent: true })
 
     const txHash = '0x' + Math.random().toString(16).slice(2).padEnd(64, '0')
     const { error } = await supabaseAdmin
       .from('ppv_transactions')
-      .update({ note: `onchain:${txHash}` })
+      .update({ note: `onchain:${txHash}`, tx_hash: txHash, status: 'sent' })
       .eq('id', tx.id)
     if (error) return res.status(500).json({ error: error.message })
     return res.status(200).json({ ok: true, tx_hash: txHash })
