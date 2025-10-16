@@ -88,9 +88,16 @@ export default function RewardsPage() {
                       <span className="text-xl">PPV</span>
                     </div>
                     {userWallet && (
-                      <p className="text-green-100 text-sm mt-2">
-                        Wallet: {userWallet.address.slice(0, 8)}...{userWallet.address.slice(-6)}
-                      </p>
+                      <div className="text-green-100 text-sm mt-2 flex items-center gap-2">
+                        <span>Wallet: {userWallet.address.slice(0, 8)}...{userWallet.address.slice(-6)}</span>
+                        <button
+                          type="button"
+                          onClick={() => { navigator.clipboard.writeText(userWallet.address).then(()=>toast.success('Wallet copiada')); }}
+                          className="px-2 py-1 rounded bg-white/20 hover:bg-white/30 text-white"
+                        >
+                          Copiar
+                        </button>
+                      </div>
                     )}
                   </div>
                   <div className="text-right">

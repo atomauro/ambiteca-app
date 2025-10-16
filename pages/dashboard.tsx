@@ -197,7 +197,7 @@ export default function DashboardPage() {
               <div className="px-4 sm:px-6 lg:px-8 pb-16">
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                   <Card className="md:col-span-1">
-                    <CardHeader className="flex flex-row items-center justify-between">
+                  <CardHeader className="flex flex-row items-center justify-between">
                       <CardTitle className="text-base">Tus puntos</CardTitle>
                       <Coins className="size-4 text-yellow-600" />
                     </CardHeader>
@@ -205,9 +205,14 @@ export default function DashboardPage() {
                       {profileLoading ? (
                         <Skeleton className="h-8 w-32" />
                       ) : (
-                        <div className="text-3xl font-bold">{(userProfile?.ppv_balance ?? userProfile?.plv_balance ?? 0)} PPV</div>
+                      <div className="text-3xl font-bold">{Number(userProfile?.ppv_balance ?? userProfile?.plv_balance ?? 0).toFixed(2)} PPV</div>
                       )}
                       <CardDescription className="mt-2">Acumula puntos reciclando materiales.</CardDescription>
+                    <div className="mt-4">
+                      <Link href="/rewards" className="inline-flex items-center rounded-md bg-blue-600 hover:bg-blue-700 text-white px-3 py-2 text-sm font-medium">
+                        Ver recompensas
+                      </Link>
+                    </div>
                     </CardContent>
                   </Card>
 
