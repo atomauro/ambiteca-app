@@ -15,6 +15,14 @@ export default function WeightPage() {
   const [ppvRate, setPpvRate] = useState<number>(0);
   const [redirecting, setRedirecting] = useState(false);
 
+  const formatUnit = (u?: string): string => {
+    const s = (u || '').trim().toLowerCase();
+    if (!s) return '';
+    if (["l", "lt", "lts", "lit", "litro", "litros", "liter", "liters"].includes(s)) return "litro";
+    if (["unidad", "unidades", "uni", "unit", "units"].includes(s)) return "unidad";
+    return s;
+  };
+
   useEffect(() => {
     if (!materialId) return;
     (async () => {
@@ -87,8 +95,8 @@ export default function WeightPage() {
             </div>
             <div>
               <p className="font-semibold">Material: {material}</p>
-              <p className="font-semibold mt-1">Medida: {unit}</p>
-              <div className="mt-1 text-sm text-muted-foreground">Tarifa: {ppvRate} PPV / {unit}</div>
+              <p className="font-semibold mt-1">Medida: {formatUnit(unit)}</p>
+              <div className="mt-1 text-sm text-muted-foreground">Tarifa: {ppvRate} PPV / {formatUnit(unit)}</div>
               <div className="mt-1 text-sm font-semibold">Estimado: {estimated.toFixed(2)} PPV</div>
               <input
                 value={weight}

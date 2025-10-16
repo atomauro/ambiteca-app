@@ -20,6 +20,14 @@ export default function MaterialsPage() {
   const [materials, setMaterials] = useState<MaterialItem[]>([]);
   const [loading, setLoading] = useState(true);
 
+  const formatUnit = (u?: string): string => {
+    const s = (u || '').trim().toLowerCase();
+    if (!s) return '';
+    if (["l", "lt", "lts", "lit", "litro", "litros", "liter", "liters"].includes(s)) return "litro";
+    if (["unidad", "unidades", "uni", "unit", "units"].includes(s)) return "unidad";
+    return s;
+  };
+
   useEffect(() => {
     const load = async () => {
       setLoading(true);
@@ -59,23 +67,34 @@ export default function MaterialsPage() {
               ))}
             </div>
           ) : (
-            <div className="mt-12 grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-7 gap-8">
+            <div className="mt-12 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 xl:grid-cols-7 gap-6 sm:gap-8 place-items-center justify-center">
               {materials.map((m) => (
-                <button key={m.id} onClick={() => goTo(m)} className="flex flex-col items-center gap-3">
+                <button
+                  key={m.id}
+                  onClick={() => goTo(m)}
+                  aria-label={`Seleccionar ${m.name}`}
+                  className="group flex flex-col items-center gap-3 rounded-xl p-3 sm:p-4 transition-colors hover:bg-accent/60 focus:outline-none focus:ring-2 focus:ring-ring/40"
+                >
                   {m.image_url ? (
                     // eslint-disable-next-line @next/next/no-img-element
-                    <img src={m.image_url} alt={m.name} className="w-24 h-24 rounded-full object-cover" />
+                    <img
+                      src={m.image_url}
+                      alt={m.name}
+                      className="w-20 h-20 sm:w-24 sm:h-24 lg:w-28 lg:h-28 rounded-full object-cover transition-transform duration-200 group-hover:scale-105"
+                    />
                   ) : (
-                    <span className="w-24 h-24 rounded-full bg-gray-200" />
+                    <span className="w-20 h-20 sm:w-24 sm:h-24 lg:w-28 lg:h-28 rounded-full bg-muted transition-transform duration-200 group-hover:scale-105" />
                   )}
-                  <span className="font-semibold text-sm">{m.name}</span>
-                  <span className="text-xs text-muted-foreground">{m.unit}</span>
+                  <span className="font-semibold text-sm sm:text-[0.95rem] text-foreground text-center leading-tight">
+                    {m.name}
+                  </span>
+                  <span className="text-xs text-muted-foreground">{formatUnit(m.unit)}</span>
                 </button>
               ))}
             </div>
           )}
           <div className="mt-12">
-            <Link href="/assistant/home" className="text-sm underline">Volver</Link>
+            <button onClick={() => router.back()} className="rounded-full border px-6 py-2 text-sm hover:bg-muted">Volver</button>
           </div>
         </section>
       </main>
