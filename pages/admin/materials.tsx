@@ -20,11 +20,13 @@ export default function AdminMaterials() {
   const [onlyActive, setOnlyActive] = useState<string>("all");
 
   useEffect(() => {
-    fetch('/api/admin/materials').then(r => r.json()).then(d => {
+    const url = new URL('/api/admin/materials', window.location.origin);
+    if (ambSel) url.searchParams.set('ambiteca_id', ambSel);
+    fetch(url.toString()).then(r => r.json()).then(d => {
       setMaterials(d.materials || []);
       setAmbs(d.ambitecas || []);
     });
-  }, []);
+  }, [ambSel]);
 
   const filtered = useMemo(() => {
     return materials.filter((m) => {

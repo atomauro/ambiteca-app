@@ -107,10 +107,12 @@ export default function AdminAmbitecas() {
                 <div className="h-40 grid place-items-center text-sm text-muted-foreground">Cargando…</div>
               ) : (
                 <div className="overflow-x-auto rounded-md border">
-                  <table className="w-full text-sm">
+                <table className="w-full text-sm">
                     <thead className="bg-muted/50">
                       <tr>
-                        <th className="text-left p-3 font-medium">Nombre</th>
+                      <th className="text-left p-3 font-medium">Nombre</th>
+                      <th className="text-left p-3 font-medium">Dirección</th>
+                      <th className="text-left p-3 font-medium">Ciudad</th>
                         <th className="text-left p-3 font-medium">Estado</th>
                         <th className="text-right p-3 font-medium">Acciones</th>
                       </tr>
@@ -119,6 +121,8 @@ export default function AdminAmbitecas() {
                       {filtered.map(a => (
                         <tr key={a.id} className="border-t">
                           <td className="p-3">{a.name}</td>
+                          <td className="p-3 text-muted-foreground">{(a as any).address || '—'}</td>
+                          <td className="p-3 text-muted-foreground">{(a as any).city || '—'}</td>
                           <td className="p-3">{a.is_active ? 'Activa' : 'Inactiva'}</td>
                           <td className="p-3 text-right">
                             <div className="flex justify-end gap-2">
@@ -129,7 +133,7 @@ export default function AdminAmbitecas() {
                         </tr>
                       ))}
                       {filtered.length===0 && (
-                        <tr><td colSpan={3} className="p-8 text-center text-muted-foreground">No se encontraron ambitecas</td></tr>
+                        <tr><td colSpan={5} className="p-8 text-center text-muted-foreground">No se encontraron ambitecas</td></tr>
                       )}
                     </tbody>
                   </table>

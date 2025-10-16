@@ -6,6 +6,7 @@ export default withAdminAuth(async function handler(req: NextApiRequest, res: Ne
 
   if (req.method === 'GET') {
     const materialId = (req.query?.id as string) || null;
+    const ambitecaId = (req.query?.ambiteca_id as string) || null;
     if (materialId) {
       // Detalle de material + historial de tarifas
       const { data: material, error: mErr } = await supabaseAdmin
@@ -19,7 +20,7 @@ export default withAdminAuth(async function handler(req: NextApiRequest, res: Ne
       const { data: ambs } = await supabaseAdmin.from('ambitecas').select('id,name').eq('is_active', true);
       const { data: rates } = await supabaseAdmin
         .from('material_conversion_rates')
-        .select('id,material_id,ambiteca_id,plv_per_kg,valid_from,valid_to,created_at')
+        .select('id,material_id,ambiteca_id,ppv_per_kg,valid_from,valid_to,created_at')
         .eq('material_id', materialId)
         .order('valid_from', { ascending: false });
 
@@ -36,8 +37,8 @@ export default withAdminAuth(async function handler(req: NextApiRequest, res: Ne
     // Obtener tarifa vigente (simple: por material global, sin ambiteca)
     const { data: rates } = await supabaseAdmin
       .from('material_conversion_rates')
-      .select('material_id,plv_per_kg,valid_from')
-      .is('ambiteca_id', null)
+      .select('material_id,ppv_per_kg,valid_from,ambiteca_id')
+      .or(ambitecaId ? `ambiteca_id.eq.${ambitecaId},ambiteca_id.is.null` : 'ambiteca_id.is.null')
       .lte('valid_from', new Date().toISOString().slice(0,10))
       .order('valid_from', { ascending: false });
     const materials = (mats || []).map(m => ({
@@ -45,8 +46,12 @@ export default withAdminAuth(async function handler(req: NextApiRequest, res: Ne
       name: m.name,
       is_active: (m as any).is_active,
       unit: (m as any).unit,
-      // Exponemos ppv_per_kg hacia el frontend por compatibilidad, leyendo plv_per_kg desde la BD
-      ppv_per_kg: (rates?.find(r => r.material_id === m.id)?.plv_per_kg ?? 1.0)
+      // Elegimos tarifa: primero específica de ambiteca si existe, si no la global
+      ppv_per_kg: (() => {
+        const matchAmb = ambitecaId ? rates?.find(r => r.material_id === m.id && r.ambiteca_id === ambitecaId) : null;
+        const matchGlobal = rates?.find(r => r.material_id === m.id && r.ambiteca_id == null);
+        return (matchAmb?.ppv_per_kg ?? matchGlobal?.ppv_per_kg ?? 1.0);
+      })()
     }));
     return res.status(200).json({ materials, ambitecas: ambs || [] });
   }
@@ -59,7 +64,7 @@ export default withAdminAuth(async function handler(req: NextApiRequest, res: Ne
     const today = new Date().toISOString().slice(0,10);
     const { error } = await supabaseAdmin.from('material_conversion_rates').insert({
       material_id: id,
-      plv_per_kg: Number(rate),
+      ppv_per_kg: Number(rate),
       valid_from: today,
       ambiteca_id: ambiteca_id || null
     });
