@@ -19,6 +19,7 @@ export default function MaterialsPage() {
   const ambitecaId = (router.query.ambiteca_id as string) || "";
   const [materials, setMaterials] = useState<MaterialItem[]>([]);
   const [loading, setLoading] = useState(true);
+  const [selectedId, setSelectedId] = useState<string | null>(null);
 
   const formatUnit = (u?: string): string => {
     const s = (u || '').trim().toLowerCase();
@@ -42,8 +43,18 @@ export default function MaterialsPage() {
     load();
   }, [ambitecaId]);
 
-  const goTo = (m: MaterialItem) => {
-    router.push({ pathname: "/assistant/scale", query: { ...router.query, material_id: m.id, material: m.name, unit: m.unit } });
+  useEffect(() => {
+    const saved = sessionStorage.getItem('assistant_material_sel');
+    if (saved) {
+      try { const s = JSON.parse(saved); if (s?.material_id) setSelectedId(s.material_id); } catch {}
+    }
+  }, []);
+
+  const continueNext = () => {
+    const m = materials.find(x => x.id === selectedId);
+    if (!m) return;
+    sessionStorage.setItem('assistant_material_sel', JSON.stringify({ material_id: m.id, material: m.name, unit: m.unit, image_url: m.image_url || '' }));
+    router.push({ pathname: "/assistant/scale", query: { ...router.query, material_id: m.id, material: m.name, unit: m.unit, image_url: m.image_url || '' } });
   };
 
   return (
@@ -71,9 +82,9 @@ export default function MaterialsPage() {
               {materials.map((m) => (
                 <button
                   key={m.id}
-                  onClick={() => goTo(m)}
+                  onClick={() => setSelectedId(m.id)}
                   aria-label={`Seleccionar ${m.name}`}
-                  className="group flex flex-col items-center gap-3 rounded-xl p-3 sm:p-4 transition-colors hover:bg-accent/60 focus:outline-none focus:ring-2 focus:ring-ring/40"
+                  className={`group flex flex-col items-center gap-3 rounded-xl p-3 sm:p-4 transition-colors focus:outline-none focus:ring-2 focus:ring-ring/40 ${selectedId===m.id ? 'bg-accent/80' : 'hover:bg-accent/60'}`}
                 >
                   {m.image_url ? (
                     // eslint-disable-next-line @next/next/no-img-element
@@ -93,8 +104,9 @@ export default function MaterialsPage() {
               ))}
             </div>
           )}
-          <div className="mt-12">
+          <div className="mt-12 flex items-center justify-center gap-3">
             <button onClick={() => router.back()} className="rounded-full border px-6 py-2 text-sm hover:bg-muted">Volver</button>
+            <button onClick={continueNext} disabled={!selectedId} className="rounded-full bg-green-500 hover:bg-green-600 disabled:opacity-60 text-white px-8 py-3 font-semibold">Continuar</button>
           </div>
         </section>
       </main>

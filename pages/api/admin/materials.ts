@@ -11,7 +11,7 @@ export default withAdminAuth(async function handler(req: NextApiRequest, res: Ne
       // Detalle de material + historial de tarifas
       const { data: material, error: mErr } = await supabaseAdmin
         .from('materials')
-        .select('id,name,unit,is_active')
+        .select('id,name,unit,is_active,image_url')
         .eq('id', materialId)
         .maybeSingle();
       if (mErr) return res.status(500).json({ error: mErr.message });
@@ -39,7 +39,7 @@ export default withAdminAuth(async function handler(req: NextApiRequest, res: Ne
       });
     }
 
-    const { data: mats, error } = await supabaseAdmin.from('materials').select('id,name,is_active,unit');
+    const { data: mats, error } = await supabaseAdmin.from('materials').select('id,name,is_active,unit,image_url');
     if (error) return res.status(500).json({ error: error.message });
     const { data: ambs } = await supabaseAdmin.from('ambitecas').select('id,name').eq('is_active', true);
     // Obtener tarifa vigente (simple: por material global, sin ambiteca)
@@ -55,6 +55,7 @@ export default withAdminAuth(async function handler(req: NextApiRequest, res: Ne
       name: m.name,
       is_active: (m as any).is_active,
       unit: (m as any).unit,
+      image_url: (m as any).image_url || null,
       // Elegimos tarifa: primero específica de ambiteca si existe, si no la global
       ppv_per_kg: (() => {
         const matchAmb = ambitecaId ? rates?.find(r => r.material_id === m.id && r.ambiteca_id === ambitecaId) : null;

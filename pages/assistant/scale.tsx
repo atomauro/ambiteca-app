@@ -24,6 +24,8 @@ export default function ScalePage() {
   };
 
   useEffect(() => {
+    const imgQ = (router.query.image_url as string) || '';
+    if (imgQ) setImageUrl(imgQ);
     if (!materialId) return;
     (async () => {
       try {
@@ -33,7 +35,7 @@ export default function ScalePage() {
         const res = await fetch(url.toString());
         const d = await res.json();
         if (res.ok) {
-          if (d?.material?.image_url) setImageUrl(d.material.image_url as string);
+          if (!imgQ && d?.material?.image_url) setImageUrl(d.material.image_url as string);
           const rate = Number(d?.current_rate ?? 0);
           setPpvRate(Number.isFinite(rate) ? rate : 0);
         }
